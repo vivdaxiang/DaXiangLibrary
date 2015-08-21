@@ -1,6 +1,9 @@
 package com.daxiang.android.http.core;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -13,12 +16,14 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -36,6 +41,11 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.cookie.params.CookieSpecPNames;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
@@ -43,10 +53,15 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.daxiang.android.util.Logger;
+import com.daxiang.android.bean.BaseRequest;
+import com.daxiang.android.utils.FileUtils;
+import com.daxiang.android.utils.Logger;
+import com.google.gson.Gson;
 
 /**
  * http请求核心类；
@@ -57,8 +72,9 @@ import com.daxiang.android.util.Logger;
  */
 public class HttpTool {
 	private static final String TAG = HttpTool.class.getSimpleName();
-	public static String SESSION_ID;
-	public static String USER_AGENT = "DaXiangLibrary Android";
+	public static String COOKIE;
+	public static String USER_AGENT = "DaXiangLibraryAndroid";
+	private static final String CONTENT_ENCODE = "utf-8";
 
 	private static final int DEFAULT_MAX_CONNECTIONS = 30;
 
@@ -81,7 +97,7 @@ public class HttpTool {
 		HttpProtocolParams.setContentCharset(httpParams, "UTF-8");
 		HttpConnectionParams.setStaleCheckingEnabled(httpParams, false);
 		HttpClientParams.setRedirecting(httpParams, false);// 重定向；
-		HttpProtocolParams.setUserAgent(httpParams, USER_AGENT);
+		// HttpProtocolParams.setUserAgent(httpParams, USER_AGENT);
 		HttpConnectionParams.setSoTimeout(httpParams, DEFAULT_SOCKET_TIMEOUT);// socket的超时时间；
 		HttpConnectionParams.setConnectionTimeout(httpParams,
 				DEFAULT_SOCKET_TIMEOUT);// 创建连接的超时时间；
@@ -145,14 +161,29 @@ public class HttpTool {
 		}
 	}
 
+	/**
+	 * Http的Get请求；
+	 * 
+	 * @param url
+	 * @return
+	 */
 	public static String httpGet(String url) {
+		return httpGet(url, null);
 
+	}
+
+	public static String httpGet(String url, Map<String, String> params) {
 		HttpGet request = new HttpGet(url);
-		setSessionId(request);
-		// addAgent(request);
+		setCookie(request);
+		addAgent(request);
+		if (null != params) {
+			for (Map.Entry<String, String> entry : params.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
 		try {
 			HttpResponse response = sHttpClient.execute(request);
-			getSessionId(response);
+			getCookie(response);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				String content = EntityUtils.toString(response.getEntity());
 				return content;
@@ -162,20 +193,90 @@ public class HttpTool {
 		} finally {
 		}
 		return "";
+	}
 
+	/**
+	 * Http的Delete请求；
+	 * 
+	 * @param url
+	 * @return
+	 */
+	public static String httpDelete(String url) {
+		return httpDelete(url, null);
+	}
+
+	/**
+	 * Http的Delete请求；
+	 * 
+	 * @param url
+	 * @param params
+	 * @return
+	 */
+	public static String httpDelete(String url, Map<String, String> params) {
+		return httpDelete(url, params, null);
+	}
+
+	/**
+	 * Http的Delete请求；
+	 * 
+	 * @param url
+	 * @param params
+	 * @param bean
+	 * @return
+	 */
+	public static String httpDelete(String url, Map<String, String> params,
+			BaseRequest bean) {
+		HttpDelete request = new HttpDelete(url);
+		setCookie(request);
+		addAgent(request);
+		if (null != params) {
+			for (Map.Entry<String, String> entry : params.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
+		try {
+			if (null != bean) {
+				request.addHeader("Content-Type", "application/json");
+				Gson gson = new Gson();
+				String json = gson.toJson(bean);
+				if (json.contains("list")) {
+					JSONObject object = new JSONObject(json);
+					String list = object.getString("list");
+					if (!TextUtils.isEmpty(list)) {
+						json = list;
+					}
+				}
+
+				StringEntity entity = new StringEntity(json, CONTENT_ENCODE);
+				request.setEntity(entity);
+			}
+
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode == HttpStatus.SC_OK) {
+				String content = EntityUtils.toString(response.getEntity());
+				return content;
+			}
+		} catch (Exception e) {
+			Logger.e(TAG, e.toString());
+		} finally {
+		}
+		return "";
 	}
 
 	public static String httpPost(String url, List<NameValuePair> postParameters) {
 
 		HttpPost request = new HttpPost(url);
-		setSessionId(request);
-		// addAgent(request);
+		setCookie(request);
+		addAgent(request);
 		try {
 			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(
 					postParameters);
 			request.setEntity(formEntity);
 			HttpResponse response = sHttpClient.execute(request);
-			getSessionId(response);
+			getCookie(response);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				String content = EntityUtils.toString(response.getEntity());
 				return content;
@@ -188,32 +289,221 @@ public class HttpTool {
 
 	}
 
-	// *****************************************************
-	/* 缺少图片上传、文件上传、文件下载处理的方法，需完善； */
-	// *****************************************************
+	public static String httpPost(String url, BaseRequest bean) {
+
+		HttpPost request = new HttpPost(url);
+		setCookie(request);
+		addAgent(request);
+		request.addHeader("Content-Type", "application/json");
+		Gson gson = new Gson();
+		String json = gson.toJson(bean);
+		try {
+			if (json.contains("list")) {
+				JSONObject object = new JSONObject(json);
+				String list = object.getString("list");
+				if (!TextUtils.isEmpty(list)) {
+					json = list;
+				}
+			}
+
+			StringEntity entity = new StringEntity(json, CONTENT_ENCODE);
+			request.setEntity(entity);
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode == HttpStatus.SC_OK) {
+				String content = EntityUtils.toString(response.getEntity());
+				return content;
+			}
+		} catch (Exception e) {
+			Logger.e(TAG, e.toString());
+			return "HttpTool Exception:" + e.toString();
+		} finally {
+		}
+		return "";
+
+	}
+
+	/**
+	 * 图片上传；
+	 * 
+	 * @param url
+	 * @param params
+	 *            Http请求头参数，如果没有，请置为null；
+	 * @param data
+	 *            Bitmap字节数组；
+	 * @return
+	 */
+	public static String httpPost(String url, Map<String, String> params,
+			byte[] data) {
+		HttpPost request = new HttpPost(url);
+		setCookie(request);
+		addAgent(request);
+		if (null != params) {
+			for (Map.Entry<String, String> entry : params.entrySet()) {
+				request.setHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
+		try {
+			ByteArrayEntity entity = new ByteArrayEntity(data);
+			request.setEntity(entity);
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			// if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
+			// {
+			String content = EntityUtils.toString(response.getEntity());
+			return content;
+			// }
+		} catch (Exception e) {
+			Logger.e(TAG, e.toString());
+		} finally {
+		}
+
+		return "";
+	}
+
+	/**
+	 * 文件上传；
+	 * 
+	 * @param url
+	 * @param params
+	 *            Http请求头参数，如果没有，请置为null；
+	 * @param bodyParams
+	 *            Http请求实体；
+	 * @param file
+	 *            文件对象；
+	 * @return
+	 */
+	public static String httpPost(String url, Map<String, String> params,
+			Map<String, String> bodyParams, File file) {
+		HttpPost request = new HttpPost(url);
+		setCookie(request);
+		addAgent(request);
+		if (null != params) {
+			for (Map.Entry<String, String> entry : params.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
+		try {
+			MultipartEntity entity = new MultipartEntity();
+			if (null != bodyParams) {
+				for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
+					entity.addPart(entry.getKey(),
+							new StringBody(entry.getValue()));
+				}
+			}
+
+			if (file.exists()) {
+				// entity.addPart("file", new InputStreamBody(new
+				// FileInputStream(
+				// file), "audio/x-caf", "abc"));
+				// entity.addPart("file", new FileBody(file));
+				entity.addPart("photo", new FileBody(file));
+			}
+
+			request.setEntity(entity);
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			// if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
+			// {
+			String content = EntityUtils.toString(response.getEntity());
+			return content;
+			// }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+
+		return "";
+	}
+
+	/**
+	 * 文件下载；
+	 * 
+	 * @param context
+	 * @param url
+	 *            要下载文件的URL；
+	 * @param fileName
+	 *            保存到本地时的名字；
+	 * @return 下载并保存成功，返回true；否则，返回false；
+	 */
+	public static boolean downloadFile(Context context, String url,
+			String fileName) {
+		InputStream is = null;
+		FileOutputStream fos = null;
+		try {
+			HttpGet httpget = new HttpGet(url);
+			HttpResponse response = sHttpClient.execute(httpget);
+
+			HttpEntity entity = response.getEntity();
+			is = entity.getContent();
+
+			File file = new File(FileUtils.getExternalCacheDirs(context),
+					fileName);
+			fos = new FileOutputStream(file);
+			/**
+			 * 根据实际运行效果 设置缓冲区大小
+			 */
+			byte[] buffer = new byte[1024 * 4];
+			int ch = 0;
+			while ((ch = is.read(buffer, 0, buffer.length)) != -1) {
+				fos.write(buffer, 0, ch);
+			}
+			is.close();
+			fos.flush();
+			fos.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				if (null != is) {
+					is.close();
+				}
+				if (null != fos) {
+					fos.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+
+			return false;
+		}
+		return true;
+	}
 
 	private static void addAgent(HttpRequestBase request) {
 		request.setHeader("User-Agent", USER_AGENT);
 	}
 
-	private static void setSessionId(HttpRequestBase request) {
-		if (!TextUtils.isEmpty(SESSION_ID)) {
-			request.setHeader("Cookie", /* "JSESSIONID=" + */SESSION_ID);
+	private static void setCookie(HttpRequestBase request) {
+		if (TextUtils.isEmpty(COOKIE)) {
+			// COOKIE = CookieUtils.getCookie(MyApplication.getInstance());
 		}
-		Logger.i("SESSION_ID", SESSION_ID);
+		if (!TextUtils.isEmpty(COOKIE)) {
+			request.setHeader("Cookie", COOKIE);
+		}
+
 	}
 
-	private static void getSessionId(HttpResponse response) {
+	private static void getCookie(HttpResponse response) {
 		Header[] headers = response.getAllHeaders();
+
 		if (headers != null) {
 			int len = headers.length;
 			Header header;
 			for (int i = 0; i < len; i++) {
 				header = headers[i];
 				if (header.getName().indexOf("Cookie") != -1) {
-					if (header.getValue().indexOf("ID=") != -1) {
-						SESSION_ID = header.getValue().split(";")[0];
-						break;
+					if (header.getValue().indexOf("touba_id=") != -1) {
+						String toubaId = header.getValue().split(";")[0];
+						// 登录成功后返回的头字段里有两个Set-Cookie，其中有一个的内容为touba_id=""
+						if (!TextUtils.isEmpty(toubaId)) {
+							COOKIE = toubaId;
+							// CookieUtils.saveCookie(MyApplication.getInstance(),
+							// toubaId);
+						}
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-package com.daxiang.android.demo;
+package com.daxiang.android;
 
 import com.daxiang.android.http.executor.TaskExecutor;
 import com.daxiang.android.http.executor.TaskExecutorConfiguration;

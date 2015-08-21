@@ -1,4 +1,4 @@
-package com.daxiang.android.util;
+package com.daxiang.android.utils;
 
 import android.util.Log;
 

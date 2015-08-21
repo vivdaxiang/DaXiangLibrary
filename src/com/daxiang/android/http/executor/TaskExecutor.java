@@ -40,8 +40,10 @@ public class TaskExecutor {
 	public void submit(Runnable task) {
 
 		if (executorService != null) {
-			executorService.submit(task);
+			executorService.execute(task);
+		} else {
+			throw new RuntimeException("TaskExecutor 未初始化!");
 		}
-	}
 
+	}
 }

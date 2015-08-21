@@ -15,9 +15,9 @@ import android.view.Window;
 
 import com.daxiang.android.http.HttpConstants;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
-import com.daxiang.android.http.JsonTask;
+import com.daxiang.android.http.HttpTask;
 import com.daxiang.android.http.executor.TaskExecutor;
-import com.daxiang.android.util.Logger;
+import com.daxiang.android.utils.Logger;
 
 /**
  * 
@@ -29,7 +29,7 @@ public class BaseActivity extends Activity {
 
 	private static final String BASETAG = BaseActivity.class.getSimpleName();
 
-	private HashMap<Integer, JsonTask> mTaskQueue = new HashMap<Integer, JsonTask>();
+	private HashMap<Integer, HttpTask> mTaskQueue = new HashMap<Integer, HttpTask>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +127,7 @@ public class BaseActivity extends Activity {
 			int dataAccessMode, HttpMethod method,
 			List<NameValuePair> postParameters) {
 
-		JsonTask jsonTask = new JsonTask(this, $responseHandler, path,
+		HttpTask jsonTask = new HttpTask(this, $responseHandler, path,
 				requestCode, method, postParameters);
 		if (dataAccessMode >= 1) {
 			jsonTask.setDataAccessMode(dataAccessMode);

@@ -37,7 +37,7 @@ public class HttpConstants {
 	 *         2015-3-24
 	 */
 	public enum HttpMethod {
-		GET, POST
+		GET, POST, DELETE
 	}
 
 	// 状态变量

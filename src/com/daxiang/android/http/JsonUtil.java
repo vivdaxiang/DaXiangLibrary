@@ -3,16 +3,16 @@ package com.daxiang.android.http;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
-import org.json.JSONException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.text.TextUtils;
 
+import com.daxiang.android.bean.BaseRequest;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
 import com.daxiang.android.http.core.HttpTool;
-import com.daxiang.android.util.Logger;
+import com.daxiang.android.utils.Logger;
 
 /**
  * 
@@ -59,14 +59,46 @@ public class JsonUtil {
 			List<NameValuePair> postParameters) {
 
 		Logger.i(TAG, "getJsonFromServer---" + url);
-		// 按照约定当state == 200时说明数据正确
-
 		String json = "";
 		if (method == HttpConstants.HttpMethod.GET) {
 			json = HttpTool.httpGet(url);
 		} else {
 			json = HttpTool.httpPost(url, postParameters);
 		}
+		Logger.i(TAG, "getJsonFromServer---" + json);
+		if (!TextUtils.isEmpty(json)) {
+			if (isCache) {
+				cacheJsonToFile(url, json, context);
+			}
+			return json;
+		}
+		return "";
+
+	}
+
+	public static String getJsonFromServer(String url, Context context,
+			HttpMethod method, BaseRequest bean) {
+
+		return getJsonFromServer(url, false, context, method, bean);
+	}
+
+	public static String getJsonFromServer(String url, boolean isCache,
+			Context context, HttpMethod method, BaseRequest bean) {
+
+		Logger.i(TAG, "getJsonFromServer---" + url);
+		// 按照约定当state == 200时说明数据正确
+
+		String json = "";
+		if (method == HttpConstants.HttpMethod.GET) {
+			json = HttpTool.httpGet(url);
+		} else if (method == HttpConstants.HttpMethod.POST) {
+			json = HttpTool.httpPost(url, bean);
+		} else if (method == HttpConstants.HttpMethod.DELETE) {
+			json = HttpTool.httpDelete(url, null, bean);
+		}
+
+		Logger.i(TAG, "getJsonFromServer---" + json);
+
 		if (!TextUtils.isEmpty(json)) {
 			if (isCache) {
 				cacheJsonToFile(url, json, context);

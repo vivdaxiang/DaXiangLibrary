@@ -4,14 +4,15 @@ import java.util.List;
 
 import org.apache.http.NameValuePair;
 
+import com.daxiang.android.bean.BaseRequest;
+import com.daxiang.android.http.HttpConstants.HttpMethod;
+import com.daxiang.android.http.utils.CharToUrlTools;
+import com.daxiang.android.utils.Logger;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-
-import com.daxiang.android.http.HttpConstants.HttpMethod;
-import com.daxiang.android.util.CharToUrlTools;
-import com.daxiang.android.util.Logger;
 
 /**
  * 
@@ -19,8 +20,8 @@ import com.daxiang.android.util.Logger;
  * 
  *         2015-3-24
  */
-public class JsonTask implements Runnable {
-	private static final String TAG = JsonTask.class.getSimpleName();
+public class HttpTask implements Runnable {
+	private static final String TAG = HttpTask.class.getSimpleName();
 	private Handler handler;
 	private String path;
 	private int requestCode;
@@ -43,6 +44,7 @@ public class JsonTask implements Runnable {
 	private Context mContext;
 	private HttpMethod method = HttpConstants.HttpMethod.GET;
 	private List<NameValuePair> postParameters = null;
+	private BaseRequest bean;
 
 	/**
 	 * 
@@ -54,7 +56,7 @@ public class JsonTask implements Runnable {
 	 * @param postParameters
 	 */
 
-	public JsonTask(Context context, Handler handler, String path,
+	public HttpTask(Context context, Handler handler, String path,
 			int requestCode, HttpMethod method,
 			List<NameValuePair> postParameters) {
 		this.handler = handler;
@@ -65,7 +67,17 @@ public class JsonTask implements Runnable {
 		this.postParameters = postParameters;
 	}
 
-	public JsonTask setDataAccessMode(int dataAccessMode) {
+	public HttpTask(Context context, Handler handler, String path,
+			int requestCode, HttpMethod method, BaseRequest bean) {
+		this.handler = handler;
+		this.path = CharToUrlTools.toUtf8String(path);
+		this.requestCode = requestCode;
+		this.mContext = context;
+		this.method = method;
+		this.bean = bean;
+	}
+
+	public HttpTask setDataAccessMode(int dataAccessMode) {
 		this.dataAccessMode = dataAccessMode;
 		return this;
 	}
@@ -83,13 +95,12 @@ public class JsonTask implements Runnable {
 			switch (dataAccessMode) {
 			// 访问网络，不做本地存储
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_NO_CACHE:
-				json = JsonUtil.getJsonFromServer(path, mContext, method,
-						postParameters);
+				json = JsonUtil.getJsonFromServer(path, mContext, method, bean);
 				break;
 
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_AND_CACHE:
 				json = JsonUtil.getJsonFromServer(path, true, mContext, method,
-						postParameters);
+						bean);
 				break;
 
 			// 仅访问本地存储
@@ -108,13 +119,12 @@ public class JsonTask implements Runnable {
 					handlerMessage(msg1);
 				}
 				json = JsonUtil.getJsonFromServer(path, true, mContext, method,
-						postParameters);
+						bean);
 				break;
 
 			// 默认仅访问网络，并且不做本地缓存；
 			default:
-				json = JsonUtil.getJsonFromServer(path, mContext, method,
-						postParameters);
+				json = JsonUtil.getJsonFromServer(path, mContext, method, bean);
 				break;
 			}
 

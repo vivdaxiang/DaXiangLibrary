@@ -1,4 +1,4 @@
-package com.daxiang.android.util;
+package com.daxiang.android.http.utils;
 
 /**
  * 
