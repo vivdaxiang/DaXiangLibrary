@@ -10,10 +10,6 @@ package com.daxiang.android;
 public class Constants {
 
 	/**
-	 * Js调用native时的头；
-	 */
-	public static final String JS_API = "TBAndroid";
-	/**
 	 * SharedPreferences的名字；
 	 */
 	public static final String GLOBAL_SHARED_PREFERS = "global_config";
