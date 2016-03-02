@@ -2,11 +2,14 @@ package com.daxiang.android.utils;
 
 import java.io.File;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 
 /**
@@ -145,6 +148,45 @@ public class IntentUtils {
 			intent.putExtras(extras);
 		}
 		context.startActivity(intent);
+	}
+
+	/**
+	 * 打开浏览器；
+	 * 
+	 * @param context
+	 * @param url
+	 */
+	public static void openBrowser(Context context, String url) {
+		Uri uri = Uri.parse(url);
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(intent);
+	}
+
+	/**
+	 * 打开系统裁剪图片的页面；
+	 * 
+	 * @param context
+	 * @param inputUri
+	 *            待裁剪图片的存放路径；
+	 * @param outputUri
+	 *            裁剪出来的图片的存放路径；
+	 * @param requestCode
+	 */
+	public static void crop(Activity context, Uri inputUri, Uri outputUri, int requestCode) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		intent.setDataAndType(inputUri, "image/*");
+		intent.putExtra("crop", "true");
+		intent.putExtra("aspectX", 1);// 图片宽高比例，可更改；
+		intent.putExtra("aspectY", 1);
+		intent.putExtra("outputX", 580);// 分辨率
+		intent.putExtra("outputY", 580);
+		intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG);// 可更换格式；
+		intent.putExtra("noFaceDetection", true);
+		intent.putExtra("scale", true);
+		intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);// 裁剪出来的图片文件存放路径；
+		intent.putExtra("return-data", false);// 若为true，裁剪完将返回bitmap对象到上一个activity；
+		context.startActivityForResult(intent, requestCode);
 	}
 
 }
