@@ -13,6 +13,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -52,7 +54,7 @@ public class BitmapUtils {
 		try {
 			stream = new BufferedOutputStream(new FileOutputStream(file));
 
-			src.compress(CompressFormat.PNG, 80, stream);
+			src.compress(CompressFormat.PNG, 100, stream);
 			stream.flush();
 			stream.close();
 		} catch (Exception e) {
@@ -90,8 +92,8 @@ public class BitmapUtils {
 		else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
 			data = uri.getPath();
 		} else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
-			Cursor cursor = context.getContentResolver().query(uri,
-					new String[] { ImageColumns.DATA }, null, null, null);
+			Cursor cursor = context.getContentResolver().query(uri, new String[] { ImageColumns.DATA }, null, null,
+					null);
 			if (null != cursor) {
 				if (cursor.moveToFirst()) {
 					int index = cursor.getColumnIndex(ImageColumns.DATA);
@@ -114,8 +116,7 @@ public class BitmapUtils {
 	 *            是否需要回收Bitmap对象；true，回收；false，不回收；
 	 * @return
 	 */
-	public static byte[] bmpToByteArray(final Bitmap bmp,
-			final boolean needRecycle) {
+	public static byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		bmp.compress(CompressFormat.PNG, 100, output);
 		if (needRecycle) {
@@ -154,4 +155,47 @@ public class BitmapUtils {
 		canvas.drawBitmap(bitmap, 0, 0, paint);
 		return target;
 	}
+
+	/**
+	 * 从本地读取图片，解析压缩为Bitmap对象；
+	 * 
+	 * @param file
+	 * @param targetWidth
+	 * @param targetHeight
+	 * @return
+	 */
+	public static Bitmap decode(File file, int targetWidth, int targetHeight) {
+
+		if (file == null || !file.exists() || file.length() == 0) {
+
+			return null;
+		}
+
+		String pathName = file.getPath();
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeFile(pathName, options);
+
+		/*
+		 * If set to a value > 1, requests the decoder to subsample the original
+		 * image, returning a smaller image to save memory. The sample size is
+		 * the number of pixels in either dimension that correspond to a single
+		 * pixel in the decoded bitmap. For example, inSampleSize == 4 returns
+		 * an image that is 1/4 the width/height of the original, and 1/16 the
+		 * number of pixels. Any value <= 1 is treated the same as 1. Note: the
+		 * decoder uses a final value based on powers of 2, any other value will
+		 * be rounded down to the nearest power of 2.
+		 */
+		options.inSampleSize = computeImageSampleSize(options, targetWidth, targetHeight);
+
+		options.inJustDecodeBounds = false;
+		return BitmapFactory.decodeFile(pathName, options);
+
+	}
+
+	private static int computeImageSampleSize(Options options, int targetWidth, int targetHeight) {
+		return Math.max(options.outWidth / targetWidth, options.outHeight / targetHeight);
+
+	}
+
 }
