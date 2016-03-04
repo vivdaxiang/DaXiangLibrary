@@ -1,7 +1,7 @@
 package com.daxiang.android.http;
 
 /**
- * Server请求URL工具；
+ * Url生成工具；
  * 
  * @author daxiang
  * @date 2015-5-29
@@ -45,11 +45,8 @@ public class UriUtil {
 	 * 
 	 * @return
 	 */
-	public static String getJieGuQuestionSearchListUri(int page, int pageSize,
-			String keywords) {
-		return String.format(SERVER_URI
-				+ "question/list?pageNo=%d&pageSize=%d&keywords=%s", page,
-				pageSize, keywords);
+	public static String getJieGuQuestionSearchListUri(int page, int pageSize, String keywords) {
+		return String.format(SERVER_URI + "question/list?pageNo=%d&pageSize=%d&keywords=%s", page, pageSize, keywords);
 	}
 
 }

@@ -17,16 +17,16 @@ public class HttpConstants {
 	 */
 	public static class NetDataProtocol {
 		// 直接从网络取数据不需要本地存储
-		public final static int DATA_FROM_NET_NO_CACHE = 10000;
+		public static final int DATA_FROM_NET_NO_CACHE = 10000;
 		// 直接从网络取数据然后本地存储
-		public final static int DATA_FROM_NET_AND_CACHE = 10001;
+		public static final int DATA_FROM_NET_AND_CACHE = 10001;
 
 		// 直接从本地存储拿数据
-		public final static int DATA_FROM_CACHE = 10002;
+		public static final int DATA_FROM_CACHE = 10002;
 		// 先从本地存储取数据填充界面，然后从网络取数据更新界面并本地存储
-		public final static int DATA_FROM_CACHE_THEN_NET = 10003;
-		public final static int LOAD_MISTAKE = 10004;
-		public final static int LOAD_SUCCESS = 10005;
+		public static final int DATA_FROM_CACHE_THEN_NET = 10003;
+		public static final int LOAD_SUCCESS = 10004;
+		public static final int LOAD_FAILED = 10005;
 	}
 
 	/**

@@ -6,28 +6,20 @@ import java.util.List;
 import org.apache.http.NameValuePair;
 
 import com.daxiang.android.http.HttpConstants;
-import com.daxiang.android.http.HttpConstants.HttpMethod;
 import com.daxiang.android.http.HttpTask;
+import com.daxiang.android.http.HttpConstants.HttpMethod;
 import com.daxiang.android.http.executor.TaskExecutor;
 import com.daxiang.android.utils.Logger;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.view.Window;
 
-/**
- * 
- * @author daxiang
- * 
- *         2015-3-25
- */
-public class BaseActivity extends Activity {
-
-	private static final String BASETAG = BaseActivity.class.getSimpleName();
+public class BaseNetworkActivity extends FragmentActivity {
+	private static final String BASETAG = BaseNetworkActivity.class.getSimpleName();
 
 	private HashMap<Integer, HttpTask> mTaskQueue = new HashMap<Integer, HttpTask>();
 
@@ -228,5 +220,4 @@ public class BaseActivity extends Activity {
 		Logger.d(BASETAG, this.getClass().getSimpleName() + " onStop() invoked!!");
 		super.onStop();
 	}
-
 }

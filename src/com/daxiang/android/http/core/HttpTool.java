@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -55,13 +53,13 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
-import android.content.Context;
-import android.text.TextUtils;
-
 import com.daxiang.android.bean.BaseRequest;
 import com.daxiang.android.utils.FileUtils;
 import com.daxiang.android.utils.Logger;
 import com.google.gson.Gson;
+
+import android.content.Context;
+import android.text.TextUtils;
 
 /**
  * http请求核心类；
@@ -75,6 +73,7 @@ public class HttpTool {
 	public static String COOKIE;
 	public static String USER_AGENT = "DaXiangLibraryAndroid";
 	private static final String CONTENT_ENCODE = "utf-8";
+	private static final String CONTENT_TYPE = "application/json";
 
 	private static final int DEFAULT_MAX_CONNECTIONS = 30;
 
@@ -87,27 +86,23 @@ public class HttpTool {
 	private static DefaultHttpClient sHttpClient;
 
 	final static HttpParams httpParams = new BasicHttpParams();
+
 	static {
 		ConnManagerParams.setTimeout(httpParams, 1000);// 从连接池中取连接的超时时间；
-		ConnManagerParams.setMaxConnectionsPerRoute(httpParams,
-				new ConnPerRouteBean(10));// 每个路由的最大连接数；
-		ConnManagerParams.setMaxTotalConnections(httpParams,
-				DEFAULT_MAX_CONNECTIONS);// 连接池的总最大连接数；
+		ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(10));// 每个路由的最大连接数；
+		ConnManagerParams.setMaxTotalConnections(httpParams, DEFAULT_MAX_CONNECTIONS);// 连接池的总最大连接数；
 		HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
 		HttpProtocolParams.setContentCharset(httpParams, "UTF-8");
 		HttpConnectionParams.setStaleCheckingEnabled(httpParams, false);
 		HttpClientParams.setRedirecting(httpParams, false);// 重定向；
 		// HttpProtocolParams.setUserAgent(httpParams, USER_AGENT);
 		HttpConnectionParams.setSoTimeout(httpParams, DEFAULT_SOCKET_TIMEOUT);// socket的超时时间；
-		HttpConnectionParams.setConnectionTimeout(httpParams,
-				DEFAULT_SOCKET_TIMEOUT);// 创建连接的超时时间；
+		HttpConnectionParams.setConnectionTimeout(httpParams, DEFAULT_SOCKET_TIMEOUT);// 创建连接的超时时间；
 		HttpConnectionParams.setTcpNoDelay(httpParams, true);
-		HttpConnectionParams.setSocketBufferSize(httpParams,
-				DEFAULT_SOCKET_BUFFER_SIZE);
+		HttpConnectionParams.setSocketBufferSize(httpParams, DEFAULT_SOCKET_BUFFER_SIZE);
 
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(new Scheme("http", PlainSocketFactory
-				.getSocketFactory(), 80));
+		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 		// https相关的，暂时注释掉；2015年4月1日22:27:58；
 		// try {
 		// KeyStore trustStore = KeyStore.getInstance(KeyStore
@@ -119,8 +114,7 @@ public class HttpTool {
 		// } catch (Exception ex) {
 		// }
 
-		ClientConnectionManager manager = new ThreadSafeClientConnManager(
-				httpParams, schemeRegistry);
+		ClientConnectionManager manager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
 		sHttpClient = new DefaultHttpClient(manager, httpParams);
 		// 暂时注释掉；2015年4月1日22:28:40；
 		// BasicCookieStore cookieStore = new BasicCookieStore();
@@ -139,26 +133,11 @@ public class HttpTool {
 		// sHttpClient.getCookieSpecs().register("oschina", csf);
 		// sHttpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY,
 		// "oschina");
-		sHttpClient.getParams().setParameter(
-				CookieSpecPNames.SINGLE_COOKIE_HEADER, true);
+		sHttpClient.getParams().setParameter(CookieSpecPNames.SINGLE_COOKIE_HEADER, true);
 	}
 
 	private HttpTool() {
 
-	}
-
-	public static void httpNoResult(String url) {
-		HttpURLConnection url_con = null;
-		try {
-			url_con = (HttpURLConnection) new URL(url).openConnection();
-			url_con.connect();
-			url_con.getResponseCode();
-		} catch (Exception e) {
-			Logger.e(TAG, e.toString());
-		} finally {
-			if (null != url_con)
-				url_con.disconnect();
-		}
 	}
 
 	/**
@@ -224,8 +203,7 @@ public class HttpTool {
 	 * @param bean
 	 * @return
 	 */
-	public static String httpDelete(String url, Map<String, String> params,
-			BaseRequest bean) {
+	public static String httpDelete(String url, Map<String, String> params, BaseRequest bean) {
 		HttpDelete request = new HttpDelete(url);
 		setCookie(request);
 		addAgent(request);
@@ -237,7 +215,7 @@ public class HttpTool {
 
 		try {
 			if (null != bean) {
-				request.addHeader("Content-Type", "application/json");
+				request.addHeader("Content-Type", CONTENT_TYPE);
 				Gson gson = new Gson();
 				String json = gson.toJson(bean);
 				if (json.contains("list")) {
@@ -272,8 +250,7 @@ public class HttpTool {
 		setCookie(request);
 		addAgent(request);
 		try {
-			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(
-					postParameters);
+			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(postParameters);
 			request.setEntity(formEntity);
 			HttpResponse response = sHttpClient.execute(request);
 			getCookie(response);
@@ -294,7 +271,7 @@ public class HttpTool {
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
-		request.addHeader("Content-Type", "application/json");
+		request.addHeader("Content-Type", CONTENT_TYPE);
 		Gson gson = new Gson();
 		String json = gson.toJson(bean);
 		try {
@@ -334,8 +311,7 @@ public class HttpTool {
 	 *            Bitmap字节数组；
 	 * @return
 	 */
-	public static String httpPost(String url, Map<String, String> params,
-			byte[] data) {
+	public static String httpPost(String url, Map<String, String> params, byte[] data) {
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
@@ -375,8 +351,7 @@ public class HttpTool {
 	 *            文件对象；
 	 * @return
 	 */
-	public static String httpPost(String url, Map<String, String> params,
-			Map<String, String> bodyParams, File file) {
+	public static String httpPost(String url, Map<String, String> params, Map<String, String> bodyParams, File file) {
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
@@ -390,8 +365,7 @@ public class HttpTool {
 			MultipartEntity entity = new MultipartEntity();
 			if (null != bodyParams) {
 				for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
-					entity.addPart(entry.getKey(),
-							new StringBody(entry.getValue()));
+					entity.addPart(entry.getKey(), new StringBody(entry.getValue()));
 				}
 			}
 
@@ -429,8 +403,7 @@ public class HttpTool {
 	 *            保存到本地时的名字；
 	 * @return 下载并保存成功，返回true；否则，返回false；
 	 */
-	public static boolean downloadFile(Context context, String url,
-			String fileName) {
+	public static boolean downloadFile(Context context, String url, String fileName) {
 		InputStream is = null;
 		FileOutputStream fos = null;
 		try {
@@ -440,8 +413,7 @@ public class HttpTool {
 			HttpEntity entity = response.getEntity();
 			is = entity.getContent();
 
-			File file = new File(FileUtils.getExternalCacheDirs(context),
-					fileName);
+			File file = new File(FileUtils.getExternalCacheDirs(context), fileName);
 			fos = new FileOutputStream(file);
 			/**
 			 * 根据实际运行效果 设置缓冲区大小
@@ -514,18 +486,15 @@ public class HttpTool {
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 
 		public MySSLSocketFactory(KeyStore truststore)
-				throws NoSuchAlgorithmException, KeyManagementException,
-				KeyStoreException, UnrecoverableKeyException {
+				throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
 			super(truststore);
 
 			TrustManager tm = new X509TrustManager() {
 
-				public void checkClientTrusted(X509Certificate[] chain,
-						String authType) throws CertificateException {
+				public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 				}
 
-				public void checkServerTrusted(X509Certificate[] chain,
-						String authType) throws CertificateException {
+				public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 				}
 
 				public X509Certificate[] getAcceptedIssuers() {
@@ -537,10 +506,9 @@ public class HttpTool {
 		}
 
 		@Override
-		public Socket createSocket(Socket socket, String host, int port,
-				boolean autoClose) throws IOException, UnknownHostException {
-			return sslContext.getSocketFactory().createSocket(socket, host,
-					port, autoClose);
+		public Socket createSocket(Socket socket, String host, int port, boolean autoClose)
+				throws IOException, UnknownHostException {
+			return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
 		}
 
 		@Override

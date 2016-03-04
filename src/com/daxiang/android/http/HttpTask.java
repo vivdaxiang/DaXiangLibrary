@@ -56,23 +56,22 @@ public class HttpTask implements Runnable {
 	 * @param postParameters
 	 */
 
-	public HttpTask(Context context, Handler handler, String path,
-			int requestCode, HttpMethod method,
+	public HttpTask(Context context, Handler handler, String path, int requestCode, HttpMethod method,
 			List<NameValuePair> postParameters) {
+		this.mContext = context;
 		this.handler = handler;
 		this.path = CharToUrlTools.toUtf8String(path);
 		this.requestCode = requestCode;
-		this.mContext = context;
 		this.method = method;
 		this.postParameters = postParameters;
 	}
 
-	public HttpTask(Context context, Handler handler, String path,
-			int requestCode, HttpMethod method, BaseRequest bean) {
+	public HttpTask(Context context, Handler handler, String path, int requestCode, HttpMethod method,
+			BaseRequest bean) {
+		this.mContext = context;
 		this.handler = handler;
 		this.path = CharToUrlTools.toUtf8String(path);
 		this.requestCode = requestCode;
-		this.mContext = context;
 		this.method = method;
 		this.bean = bean;
 	}
@@ -99,8 +98,7 @@ public class HttpTask implements Runnable {
 				break;
 
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_AND_CACHE:
-				json = JsonUtil.getJsonFromServer(path, true, mContext, method,
-						bean);
+				json = JsonUtil.getJsonFromServer(path, true, mContext, method, bean);
 				break;
 
 			// 仅访问本地存储
@@ -118,8 +116,7 @@ public class HttpTask implements Runnable {
 					msg1.obj = json;
 					handlerMessage(msg1);
 				}
-				json = JsonUtil.getJsonFromServer(path, true, mContext, method,
-						bean);
+				json = JsonUtil.getJsonFromServer(path, true, mContext, method, bean);
 				break;
 
 			// 默认仅访问网络，并且不做本地缓存；
@@ -129,7 +126,7 @@ public class HttpTask implements Runnable {
 			}
 
 			if (TextUtils.isEmpty(json)) {
-				msg.what = HttpConstants.NetDataProtocol.LOAD_MISTAKE;
+				msg.what = HttpConstants.NetDataProtocol.LOAD_FAILED;
 				handlerMessage(msg);
 			} else {
 				msg.what = dataSuccess;
@@ -138,7 +135,7 @@ public class HttpTask implements Runnable {
 			}
 
 		} catch (Exception e) {
-			msg.what = HttpConstants.NetDataProtocol.LOAD_MISTAKE;
+			msg.what = HttpConstants.NetDataProtocol.LOAD_FAILED;
 			handlerMessage(msg);
 			e.printStackTrace();
 		}

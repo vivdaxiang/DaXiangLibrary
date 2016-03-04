@@ -35,8 +35,8 @@ public class JsonUtil {
 	 *            post请求参数
 	 * @return
 	 */
-	public static String getJsonFromServer(String url, Context context,
-			HttpMethod method, List<NameValuePair> postParameters) {
+	public static String getJsonFromServer(String url, Context context, HttpMethod method,
+			List<NameValuePair> postParameters) {
 
 		return getJsonFromServer(url, false, context, method, postParameters);
 	}
@@ -54,8 +54,7 @@ public class JsonUtil {
 	 *            post请求参数
 	 * @return
 	 */
-	public static String getJsonFromServer(String url, boolean isCache,
-			Context context, HttpMethod method,
+	public static String getJsonFromServer(String url, boolean isCache, Context context, HttpMethod method,
 			List<NameValuePair> postParameters) {
 
 		Logger.i(TAG, "getJsonFromServer---" + url);
@@ -76,14 +75,13 @@ public class JsonUtil {
 
 	}
 
-	public static String getJsonFromServer(String url, Context context,
-			HttpMethod method, BaseRequest bean) {
+	public static String getJsonFromServer(String url, Context context, HttpMethod method, BaseRequest bean) {
 
 		return getJsonFromServer(url, false, context, method, bean);
 	}
 
-	public static String getJsonFromServer(String url, boolean isCache,
-			Context context, HttpMethod method, BaseRequest bean) {
+	public static String getJsonFromServer(String url, boolean isCache, Context context, HttpMethod method,
+			BaseRequest bean) {
 
 		Logger.i(TAG, "getJsonFromServer---" + url);
 		// 按照约定当state == 200时说明数据正确
@@ -133,8 +131,7 @@ public class JsonUtil {
 	 */
 	public static String getJsonFromSharedPref(String url, Context context) {
 		Logger.i(TAG, "getJsonFromSharedPref---" + url);
-		SharedPreferences sp = context.getSharedPreferences(CACHE_JSON_SP,
-				Context.MODE_PRIVATE);
+		SharedPreferences sp = context.getSharedPreferences(CACHE_JSON_SP, Context.MODE_PRIVATE);
 		String json = "";
 		if (sp.contains(url)) {
 			json = sp.getString(url, "");
@@ -160,11 +157,9 @@ public class JsonUtil {
 	 * @param json
 	 * @param context
 	 */
-	private static void cacheJsonToSharedPref(String url, String json,
-			Context context) {
+	private static void cacheJsonToSharedPref(String url, String json, Context context) {
 		Logger.i(TAG, "cacheJsonToSharedPref---" + url);
-		SharedPreferences sp = context.getSharedPreferences(CACHE_JSON_SP,
-				Context.MODE_PRIVATE);
+		SharedPreferences sp = context.getSharedPreferences(CACHE_JSON_SP, Context.MODE_PRIVATE);
 		Editor editor = sp.edit();
 		editor.putString(url, json);
 		editor.commit();
