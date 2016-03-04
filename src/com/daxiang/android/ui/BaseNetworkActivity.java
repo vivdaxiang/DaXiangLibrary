@@ -8,6 +8,7 @@ import org.apache.http.NameValuePair;
 import com.daxiang.android.http.HttpConstants;
 import com.daxiang.android.http.HttpTask;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
+import com.daxiang.android.http.HttpRequest;
 import com.daxiang.android.http.executor.TaskExecutor;
 import com.daxiang.android.utils.Logger;
 
@@ -56,45 +57,8 @@ public class BaseNetworkActivity extends FragmentActivity {
 		super.onDestroy();
 	}
 
-	/**
-	 * 
-	 * @param path
-	 *            请求url
-	 * @param requestCode
-	 *            请求码
-	 */
-	public void requestHttpData(String path, int requestCode) {
-		requestHttpData(path, requestCode, 0);
-	}
+	protected void sendRequest(HttpRequest request) {
 
-	/**
-	 * 
-	 * @param path
-	 *            请求URL；
-	 * @param requestCode
-	 *            请求码；
-	 * @param dataAccessMode
-	 *            缓存方式；also see: {@link HttpConstants.NetDataProtocol}
-	 */
-	public void requestHttpData(String path, int requestCode, int dataAccessMode) {
-		requestHttpData(path, requestCode, dataAccessMode, HttpMethod.GET, null);
-	}
-
-	/**
-	 * 
-	 * 
-	 * @param path
-	 *            请求url
-	 * @param requestCode
-	 *            请求码
-	 * @param method
-	 *            请求方式
-	 * @param postParameters
-	 *            post方式参数
-	 */
-
-	public void requestHttpData(String path, int requestCode, HttpMethod method, List<NameValuePair> postParameters) {
-		requestHttpData(path, requestCode, 0, method, postParameters);
 	}
 
 	/**
