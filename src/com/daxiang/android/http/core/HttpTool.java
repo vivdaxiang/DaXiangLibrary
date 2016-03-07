@@ -54,6 +54,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import com.daxiang.android.bean.BaseRequest;
+import com.daxiang.android.http.HttpConstants.HttpMethod;
+import com.daxiang.android.http.HttpRequest;
 import com.daxiang.android.utils.FileUtils;
 import com.daxiang.android.utils.Logger;
 import com.google.gson.Gson;
@@ -68,6 +70,7 @@ import android.text.TextUtils;
  * 
  *         2015-3-23
  */
+@SuppressWarnings("deprecation")
 public class HttpTool {
 	private static final String TAG = HttpTool.class.getSimpleName();
 	public static String COOKIE;
@@ -75,7 +78,7 @@ public class HttpTool {
 	private static final String CONTENT_ENCODE = "utf-8";
 	private static final String CONTENT_TYPE = "application/json";
 
-	private static final int DEFAULT_MAX_CONNECTIONS = 30;
+	private static final int DEFAULT_MAX_CONNECTIONS = 10;
 
 	public static final int DEFAULT_SOCKET_TIMEOUT = 30 * 1000;
 
@@ -88,11 +91,11 @@ public class HttpTool {
 	final static HttpParams httpParams = new BasicHttpParams();
 
 	static {
-		ConnManagerParams.setTimeout(httpParams, 1000);// 从连接池中取连接的超时时间；
+		ConnManagerParams.setTimeout(httpParams, 3000);// 从连接池中取连接的超时时间；
 		ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(10));// 每个路由的最大连接数；
 		ConnManagerParams.setMaxTotalConnections(httpParams, DEFAULT_MAX_CONNECTIONS);// 连接池的总最大连接数；
 		HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-		HttpProtocolParams.setContentCharset(httpParams, "UTF-8");
+		HttpProtocolParams.setContentCharset(httpParams, CONTENT_ENCODE);
 		HttpConnectionParams.setStaleCheckingEnabled(httpParams, false);
 		HttpClientParams.setRedirecting(httpParams, false);// 重定向；
 		// HttpProtocolParams.setUserAgent(httpParams, USER_AGENT);
@@ -140,17 +143,26 @@ public class HttpTool {
 
 	}
 
-	/**
-	 * Http的Get请求；
-	 * 
-	 * @param url
-	 * @return
-	 */
-	public static String httpGet(String url) {
-		return httpGet(url, null);
+	public static String sendRequest(HttpRequest httpRequest) {
 
+		if (httpRequest.method == HttpMethod.GET) {
+			return HttpTool.httpGet(httpRequest.path, httpRequest.headParams);
+		} else if (httpRequest.method == HttpMethod.POST) {
+			return HttpTool.httpPost(httpRequest.path, httpRequest.headParams, httpRequest.bodyParams);
+		} else if (httpRequest.method == HttpMethod.DELETE) {
+
+		}
+
+		return "";
 	}
 
+	/**
+	 * HTTP的GET请求；
+	 * 
+	 * @param url
+	 * @param params
+	 * @return
+	 */
 	public static String httpGet(String url, Map<String, String> params) {
 		HttpGet request = new HttpGet(url);
 		setCookie(request);
@@ -188,27 +200,27 @@ public class HttpTool {
 	 * Http的Delete请求；
 	 * 
 	 * @param url
-	 * @param params
+	 * @param headParams
 	 * @return
 	 */
-	public static String httpDelete(String url, Map<String, String> params) {
-		return httpDelete(url, params, null);
+	public static String httpDelete(String url, Map<String, String> headParams) {
+		return httpDelete(url, headParams, null);
 	}
 
 	/**
 	 * Http的Delete请求；
 	 * 
 	 * @param url
-	 * @param params
+	 * @param headParams
 	 * @param bean
 	 * @return
 	 */
-	public static String httpDelete(String url, Map<String, String> params, BaseRequest bean) {
+	public static String httpDelete(String url, Map<String, String> headParams, BaseRequest bean) {
 		HttpDelete request = new HttpDelete(url);
 		setCookie(request);
 		addAgent(request);
-		if (null != params) {
-			for (Map.Entry<String, String> entry : params.entrySet()) {
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
 				request.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
@@ -244,13 +256,28 @@ public class HttpTool {
 		return "";
 	}
 
-	public static String httpPost(String url, List<NameValuePair> postParameters) {
+	/**
+	 * Post请求
+	 * 
+	 * @param url
+	 * @param headParams
+	 * @param bodyParams
+	 * @return
+	 */
+	public static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams) {
 
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
+
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
 		try {
-			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(postParameters);
+			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(bodyParams);
 			request.setEntity(formEntity);
 			HttpResponse response = sHttpClient.execute(request);
 			getCookie(response);

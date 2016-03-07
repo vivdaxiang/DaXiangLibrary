@@ -1,14 +1,10 @@
 package com.daxiang.android.ui;
 
 import java.util.HashMap;
-import java.util.List;
-
-import org.apache.http.NameValuePair;
 
 import com.daxiang.android.http.HttpConstants;
-import com.daxiang.android.http.HttpTask;
-import com.daxiang.android.http.HttpConstants.HttpMethod;
 import com.daxiang.android.http.HttpRequest;
+import com.daxiang.android.http.HttpTask;
 import com.daxiang.android.http.executor.TaskExecutor;
 import com.daxiang.android.utils.Logger;
 
@@ -16,10 +12,9 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.view.Window;
 
-public class BaseNetworkActivity extends FragmentActivity {
+public abstract class BaseNetworkActivity extends BaseActivity {
 	private static final String BASETAG = BaseNetworkActivity.class.getSimpleName();
 
 	private HashMap<Integer, HttpTask> mTaskQueue = new HashMap<Integer, HttpTask>();
@@ -57,41 +52,23 @@ public class BaseNetworkActivity extends FragmentActivity {
 		super.onDestroy();
 	}
 
-	protected void sendRequest(HttpRequest request) {
+	protected void sendRequest(HttpRequest httpRequest) {
 
-	}
+		httpRequest.setResponseHandler($responseHandler);
 
-	/**
-	 * 
-	 * @param path
-	 *            请求url
-	 * @param requestCode
-	 *            请求码
-	 * @param dataAccessMode
-	 *            缓存方式 默认只从网络取数据不做缓存；also see:
-	 *            {@link HttpConstants.NetDataProtocol}
-	 * @param method
-	 *            请求方式
-	 * @param postParameters
-	 *            post方式参数
-	 */
-	public void requestHttpData(String path, int requestCode, int dataAccessMode, HttpMethod method,
-			List<NameValuePair> postParameters) {
+		HttpTask jsonTask = new HttpTask(httpRequest);
 
-		HttpTask jsonTask = new HttpTask(this, $responseHandler, path, requestCode, method, postParameters);
-		if (dataAccessMode >= 1) {
-			jsonTask.setDataAccessMode(dataAccessMode);
+		if (mTaskQueue.containsKey(httpRequest.requestCode)) {
+			Logger.i(BASETAG, "remove repeated task, id: " + httpRequest.requestCode);
+			mTaskQueue.get(httpRequest.requestCode).cancel();
 		}
-		if (mTaskQueue.containsKey(requestCode)) {
-			Logger.i(BASETAG, "remove repeated task, id: " + requestCode);
-			mTaskQueue.get(requestCode).cancel();
-		}
-		Logger.i(BASETAG, "add task to queue, id: " + requestCode);
-		mTaskQueue.put(requestCode, jsonTask);
+
+		Logger.i(BASETAG, "add task to queue, id: " + httpRequest.requestCode);
+		mTaskQueue.put(httpRequest.requestCode, jsonTask);
 		TaskExecutor.getInstance().submit(jsonTask);
 	}
 
-	protected Handler $responseHandler = new Handler() {
+	private Handler $responseHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -121,9 +98,7 @@ public class BaseNetworkActivity extends FragmentActivity {
 	 * @param data
 	 *            返回的数据；
 	 */
-	public void onRequestSuccess(int requestCode, String data) {
-		Logger.i(BASETAG, "onRequestSuccess = " + requestCode);
-	}
+	protected abstract void onRequestSuccess(int requestCode, String data);
 
 	/**
 	 * 加载数据失败的回调，子类须重写该方法；
@@ -133,9 +108,7 @@ public class BaseNetworkActivity extends FragmentActivity {
 	 * @param errorMessage
 	 *            错误信息；
 	 */
-	public void onRequestFailed(int requestCode, String errorMessage) {
-		Logger.e(BASETAG, requestCode + "onRequestFailed = " + errorMessage);
-	}
+	protected abstract void onRequestFailed(int requestCode, String errorMessage);
 
 	protected ProgressDialog mProgressDialog;// 加载对话框
 

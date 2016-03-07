@@ -1,6 +1,7 @@
 package com.daxiang.android.http;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.NameValuePair;
 
@@ -19,7 +20,15 @@ import android.os.Handler;
  */
 public class HttpRequest {
 
-	public Context mContext;
+	public HttpRequest(Context context) {
+		this.context = context;
+		method = HttpMethod.GET;
+	}
+
+	/**
+	 * 
+	 */
+	private Context context;
 
 	/**
 	 * 资源路径；
@@ -33,20 +42,47 @@ public class HttpRequest {
 	 * 请求方式；also see {@link HttpConstants.HttpMethod}
 	 */
 	public HttpMethod method;
+
 	/**
-	 * POST请求参数；
+	 * 请求头参数；
 	 */
-	public List<NameValuePair> requestParameters;
+	public Map<String, String> headParams;
+
+	/**
+	 * 请求实体参数；
+	 */
+	public List<NameValuePair> bodyParams;
 	/**
 	 * 缓存模式
 	 */
 	public int dataAccessMode;
 
-	public Handler handler;
+	private Handler responseHandler;
 
-	public BaseRequest bean;
+	public BaseRequest bean;// 暂时忽略该选项；
 
-	public HttpRequest() {
-		method = HttpMethod.GET;
+	/**
+	 * 是否缓存请求结果
+	 */
+	private boolean isCache;
+
+	public boolean isCache() {
+		return isCache;
+	}
+
+	public void setCache(boolean isCache) {
+		this.isCache = isCache;
+	}
+
+	public Context getContext() {
+		return context;
+	}
+
+	public Handler getResponseHandler() {
+		return responseHandler;
+	}
+
+	public void setResponseHandler(Handler responseHandler) {
+		this.responseHandler = responseHandler;
 	}
 }

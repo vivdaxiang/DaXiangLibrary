@@ -1,15 +1,7 @@
 package com.daxiang.android.http;
 
-import java.util.List;
-
-import org.apache.http.NameValuePair;
-
-import com.daxiang.android.bean.BaseRequest;
-import com.daxiang.android.http.HttpConstants.HttpMethod;
-import com.daxiang.android.http.utils.CharToUrlTools;
 import com.daxiang.android.utils.Logger;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -23,105 +15,64 @@ import android.text.TextUtils;
 public class HttpTask implements Runnable {
 	private static final String TAG = HttpTask.class.getSimpleName();
 	private Handler handler;
-	private String path;
-	private int requestCode;
+
 	private boolean isCancel;
 
-	/**
-	 * 直接从网络取数据不需要本地存储 DATA_FROM_NET_NO_CACHE
-	 * 
-	 * 直接从网络取数据需要本地存储 DATA_FROM_NET_AND_CACHE
-	 * 
-	 * 直接从本地存储拿数据 DATA_FROM_CACHE
-	 * 
-	 * 先从本地存储取数据显示出来 再去网络取数据更新界面并本地存储 DATA_FROM_CACHE_THEN_NET
-	 */
-	private int dataAccessMode = HttpConstants.NetDataProtocol.DATA_FROM_NET_NO_CACHE;
-	/**
-	 * 为了区别不同的请求，当页面有多个请求时需要改变此变量区别
-	 */
-	private int dataSuccess = HttpConstants.NetDataProtocol.LOAD_SUCCESS;
-	private Context mContext;
-	private HttpMethod method = HttpConstants.HttpMethod.GET;
-	private List<NameValuePair> postParameters = null;
-	private BaseRequest bean;
+	// --------------------------------------------------------------------------------------------------------
+	private HttpRequest httpRequest;
 
-	/**
-	 * 
-	 * @param context
-	 * @param handler
-	 * @param path
-	 * @param requestCode
-	 * @param method
-	 * @param postParameters
-	 */
-
-	public HttpTask(Context context, Handler handler, String path, int requestCode, HttpMethod method,
-			List<NameValuePair> postParameters) {
-		this.mContext = context;
-		this.handler = handler;
-		this.path = CharToUrlTools.toUtf8String(path);
-		this.requestCode = requestCode;
-		this.method = method;
-		this.postParameters = postParameters;
-	}
-
-	public HttpTask(Context context, Handler handler, String path, int requestCode, HttpMethod method,
-			BaseRequest bean) {
-		this.mContext = context;
-		this.handler = handler;
-		this.path = CharToUrlTools.toUtf8String(path);
-		this.requestCode = requestCode;
-		this.method = method;
-		this.bean = bean;
-	}
-
-	public HttpTask setDataAccessMode(int dataAccessMode) {
-		this.dataAccessMode = dataAccessMode;
-		return this;
+	public HttpTask(HttpRequest httpRequest) {
+		this.httpRequest = httpRequest;
+		handler = httpRequest.getResponseHandler();
 	}
 
 	@Override
 	public void run() {
 		Message msg = handler.obtainMessage();
-		msg.arg1 = requestCode;
+		msg.arg1 = httpRequest.requestCode;
 		String json = null;
 		try {
 			if (isCancel) {
 				Logger.i(TAG, "cancel this task before run!");
 				return;
 			}
-			switch (dataAccessMode) {
+			switch (httpRequest.dataAccessMode) {
 			// 访问网络，不做本地存储
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_NO_CACHE:
-				json = JsonUtil.getJsonFromServer(path, mContext, method, bean);
+				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_AND_CACHE:
-				json = JsonUtil.getJsonFromServer(path, true, mContext, method, bean);
+				httpRequest.setCache(true);
+				
+				
+				//需要增加对网络状态的判断；*************
+				
+				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 
 			// 仅访问本地存储
-			case HttpConstants.NetDataProtocol.DATA_FROM_CACHE:
-				json = JsonUtil.getJsonFromFile(path, mContext);
+			case HttpConstants.NetDataProtocol.DATA_ONLY_FROM_CACHE:
+				json = JsonUtil.getJsonFromFile(httpRequest);
 				break;
 
 			// 先访问本地存储返回数据展示，再访问网络更新数据并刷新UI
 			case HttpConstants.NetDataProtocol.DATA_FROM_CACHE_THEN_NET:
-				json = JsonUtil.getJsonFromFile(path, mContext);
+				json = JsonUtil.getJsonFromFile(httpRequest);
 				if (!TextUtils.isEmpty(json)) {
 					Message msg1 = handler.obtainMessage();
-					msg1.arg1 = requestCode;
-					msg1.what = dataSuccess;
+					msg1.arg1 = httpRequest.requestCode;
+					msg1.what = HttpConstants.NetDataProtocol.LOAD_SUCCESS;
 					msg1.obj = json;
 					handlerMessage(msg1);
 				}
-				json = JsonUtil.getJsonFromServer(path, true, mContext, method, bean);
+				httpRequest.setCache(true);
+				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 
 			// 默认仅访问网络，并且不做本地缓存；
 			default:
-				json = JsonUtil.getJsonFromServer(path, mContext, method, bean);
+				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 			}
 
@@ -129,7 +80,7 @@ public class HttpTask implements Runnable {
 				msg.what = HttpConstants.NetDataProtocol.LOAD_FAILED;
 				handlerMessage(msg);
 			} else {
-				msg.what = dataSuccess;
+				msg.what = HttpConstants.NetDataProtocol.LOAD_SUCCESS;
 				msg.obj = json;
 				handlerMessage(msg);
 			}

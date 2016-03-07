@@ -22,7 +22,7 @@ public class HttpConstants {
 		public static final int DATA_FROM_NET_AND_CACHE = 10001;
 
 		// 直接从本地存储拿数据
-		public static final int DATA_FROM_CACHE = 10002;
+		public static final int DATA_ONLY_FROM_CACHE = 10002;
 		// 先从本地存储取数据填充界面，然后从网络取数据更新界面并本地存储
 		public static final int DATA_FROM_CACHE_THEN_NET = 10003;
 		public static final int LOAD_SUCCESS = 10004;
