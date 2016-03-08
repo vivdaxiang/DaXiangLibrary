@@ -1,6 +1,7 @@
 package com.daxiang.android.http;
 
 import com.daxiang.android.utils.Logger;
+import com.daxiang.android.utils.NetworkUtils;
 
 import android.os.Handler;
 import android.os.Message;
@@ -18,7 +19,7 @@ public class HttpTask implements Runnable {
 
 	private boolean isCancel;
 
-	// --------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
 	private HttpRequest httpRequest;
 
 	public HttpTask(HttpRequest httpRequest) {
@@ -39,16 +40,19 @@ public class HttpTask implements Runnable {
 			switch (httpRequest.dataAccessMode) {
 			// 访问网络，不做本地存储
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_NO_CACHE:
+				httpRequest.setCache(false);
 				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 
 			case HttpConstants.NetDataProtocol.DATA_FROM_NET_AND_CACHE:
 				httpRequest.setCache(true);
-				
-				
-				//需要增加对网络状态的判断；*************
-				
-				json = JsonUtil.getJsonFromServer(httpRequest);
+
+				if (NetworkUtils.isAvailable(httpRequest.getContext())) {
+					json = JsonUtil.getJsonFromServer(httpRequest);
+				} else {
+					json = JsonUtil.getJsonFromFile(httpRequest);
+				}
+
 				break;
 
 			// 仅访问本地存储
@@ -72,6 +76,7 @@ public class HttpTask implements Runnable {
 
 			// 默认仅访问网络，并且不做本地缓存；
 			default:
+				httpRequest.setCache(false);
 				json = JsonUtil.getJsonFromServer(httpRequest);
 				break;
 			}

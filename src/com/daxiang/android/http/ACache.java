@@ -33,6 +33,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 /**
+ * 基于ASimpleCache改写； github地址：https://github.com/yangfuhai/ASimpleCache
+ * 
  * @author Michael Yang（www.yangfuhai.com） update at 2013.08.07
  */
 public class ACache {
@@ -80,8 +82,7 @@ public class ACache {
 
 	private ACache(File cacheDir, long max_size, int max_count) {
 		if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-			throw new RuntimeException("can't make dirs in "
-					+ cacheDir.getAbsolutePath());
+			throw new RuntimeException("can't make dirs in " + cacheDir.getAbsolutePath());
 		}
 		mCache = new ACacheManager(cacheDir, max_size, max_count);
 	}
@@ -559,8 +560,7 @@ public class ACache {
 		private final AtomicInteger cacheCount;
 		private final long sizeLimit;
 		private final int countLimit;
-		private final Map<File, Long> lastUsageDates = Collections
-				.synchronizedMap(new HashMap<File, Long>());
+		private final Map<File, Long> lastUsageDates = Collections.synchronizedMap(new HashMap<File, Long>());
 		/**
 		 * 缓存目录；
 		 */
@@ -589,8 +589,7 @@ public class ACache {
 						for (File cachedFile : cachedFiles) {
 							size += calculateSize(cachedFile);
 							count += 1;
-							lastUsageDates.put(cachedFile,
-									cachedFile.lastModified());
+							lastUsageDates.put(cachedFile, cachedFile.lastModified());
 						}
 						cacheSize.set(size);
 						cacheCount.set(count);
@@ -736,8 +735,7 @@ public class ACache {
 			if (strs != null && strs.length == 2) {
 				String saveTimeStr = strs[0];
 				while (saveTimeStr.startsWith("0")) {
-					saveTimeStr = saveTimeStr
-							.substring(1, saveTimeStr.length());
+					saveTimeStr = saveTimeStr.substring(1, saveTimeStr.length());
 				}
 				long saveTime = Long.valueOf(saveTimeStr);
 				long deleteAfter = Long.valueOf(strs[1]);
@@ -769,16 +767,14 @@ public class ACache {
 		 */
 		private static String clearDateInfo(String strInfo) {
 			if (strInfo != null && hasDateInfo(strInfo.getBytes())) {
-				strInfo = strInfo.substring(strInfo.indexOf(mSeparator) + 1,
-						strInfo.length());
+				strInfo = strInfo.substring(strInfo.indexOf(mSeparator) + 1, strInfo.length());
 			}
 			return strInfo;
 		}
 
 		private static byte[] clearDateInfo(byte[] data) {
 			if (hasDateInfo(data)) {
-				return copyOfRange(data, indexOf(data, mSeparator) + 1,
-						data.length);
+				return copyOfRange(data, indexOf(data, mSeparator) + 1, data.length);
 			}
 			return data;
 		}
@@ -790,15 +786,13 @@ public class ACache {
 		 * @return true，包含；false，不包含；
 		 */
 		private static boolean hasDateInfo(byte[] data) {
-			return data != null && data.length > 15 && data[13] == '-'
-					&& indexOf(data, mSeparator) > 14;
+			return data != null && data.length > 15 && data[13] == '-' && indexOf(data, mSeparator) > 14;
 		}
 
 		private static String[] getDateInfoFromDate(byte[] data) {
 			if (hasDateInfo(data)) {
 				String saveDate = new String(copyOfRange(data, 0, 13));
-				String deleteAfter = new String(copyOfRange(data, 14,
-						indexOf(data, mSeparator)));
+				String deleteAfter = new String(copyOfRange(data, 14, indexOf(data, mSeparator)));
 				return new String[] { saveDate, deleteAfter };
 			}
 			return null;
@@ -818,8 +812,7 @@ public class ACache {
 			if (newLength < 0)
 				throw new IllegalArgumentException(from + " > " + to);
 			byte[] copy = new byte[newLength];
-			System.arraycopy(original, from, copy, 0,
-					Math.min(original.length - from, newLength));
+			System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
 			return copy;
 		}
 

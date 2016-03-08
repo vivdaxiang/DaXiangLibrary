@@ -72,6 +72,7 @@ public abstract class BaseNetworkActivity extends BaseActivity {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+
 			case HttpConstants.NetDataProtocol.LOAD_SUCCESS:
 				try {
 					onRequestSuccess(msg.arg1, (String) msg.obj);
@@ -79,6 +80,7 @@ public abstract class BaseNetworkActivity extends BaseActivity {
 					Logger.e(BASETAG, "handleMessage LOAD_SUCCESS --> error-->  " + e.toString());
 				}
 				break;
+
 			case HttpConstants.NetDataProtocol.LOAD_FAILED:
 				try {
 					onRequestFailed(msg.arg1, (String) msg.obj);
@@ -115,7 +117,7 @@ public abstract class BaseNetworkActivity extends BaseActivity {
 	/**
 	 * 关闭提示框
 	 */
-	public void closeProgressDialog() {
+	public void dismissProgressDialog() {
 		if (mProgressDialog != null)
 			mProgressDialog.dismiss();
 	}

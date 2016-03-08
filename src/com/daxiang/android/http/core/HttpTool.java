@@ -163,12 +163,12 @@ public class HttpTool {
 	 * @param params
 	 * @return
 	 */
-	public static String httpGet(String url, Map<String, String> params) {
+	public static String httpGet(String url, Map<String, String> headParams) {
 		HttpGet request = new HttpGet(url);
 		setCookie(request);
 		addAgent(request);
-		if (null != params) {
-			for (Map.Entry<String, String> entry : params.entrySet()) {
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
 				request.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
@@ -185,6 +185,45 @@ public class HttpTool {
 		}
 		return "";
 	}
+
+	/**
+	 * Post请求
+	 * 
+	 * @param url
+	 * @param headParams
+	 * @param bodyParams
+	 * @return
+	 */
+	public static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams) {
+
+		HttpPost request = new HttpPost(url);
+		setCookie(request);
+		addAgent(request);
+
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
+		try {
+			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(bodyParams);
+			request.setEntity(formEntity);
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				String content = EntityUtils.toString(response.getEntity());
+				return content;
+			}
+		} catch (Exception e) {
+			Logger.e(TAG, e.toString());
+		} finally {
+		}
+		return "";
+
+	}
+
+	// -----------------------------------------------------------------------------------------
 
 	/**
 	 * Http的Delete请求；
@@ -256,43 +295,6 @@ public class HttpTool {
 		return "";
 	}
 
-	/**
-	 * Post请求
-	 * 
-	 * @param url
-	 * @param headParams
-	 * @param bodyParams
-	 * @return
-	 */
-	public static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams) {
-
-		HttpPost request = new HttpPost(url);
-		setCookie(request);
-		addAgent(request);
-
-		if (null != headParams) {
-			for (Map.Entry<String, String> entry : headParams.entrySet()) {
-				request.addHeader(entry.getKey(), entry.getValue());
-			}
-		}
-
-		try {
-			UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(bodyParams);
-			request.setEntity(formEntity);
-			HttpResponse response = sHttpClient.execute(request);
-			getCookie(response);
-			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				String content = EntityUtils.toString(response.getEntity());
-				return content;
-			}
-		} catch (Exception e) {
-			Logger.e(TAG, e.toString());
-		} finally {
-		}
-		return "";
-
-	}
-
 	public static String httpPost(String url, BaseRequest bean) {
 
 		HttpPost request = new HttpPost(url);
@@ -328,6 +330,8 @@ public class HttpTool {
 
 	}
 
+	// -----------------------------------------------------------------------------------------
+
 	/**
 	 * 图片上传；
 	 * 
@@ -338,12 +342,12 @@ public class HttpTool {
 	 *            Bitmap字节数组；
 	 * @return
 	 */
-	public static String httpPost(String url, Map<String, String> params, byte[] data) {
+	public static String httpPost(String url, Map<String, String> headParams, byte[] data) {
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
-		if (null != params) {
-			for (Map.Entry<String, String> entry : params.entrySet()) {
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
 				request.setHeader(entry.getKey(), entry.getValue());
 			}
 		}
@@ -378,12 +382,13 @@ public class HttpTool {
 	 *            文件对象；
 	 * @return
 	 */
-	public static String httpPost(String url, Map<String, String> params, Map<String, String> bodyParams, File file) {
+	public static String httpPost(String url, Map<String, String> headParams, Map<String, String> bodyParams,
+			File file) {
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
 		addAgent(request);
-		if (null != params) {
-			for (Map.Entry<String, String> entry : params.entrySet()) {
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
 				request.addHeader(entry.getKey(), entry.getValue());
 			}
 		}

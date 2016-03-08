@@ -53,7 +53,7 @@ public class HttpRequest {
 	 */
 	public List<NameValuePair> bodyParams;
 	/**
-	 * 缓存模式
+	 * 缓存模式；also see {@link HttpConstants.NetDataProtocol}
 	 */
 	public int dataAccessMode;
 
