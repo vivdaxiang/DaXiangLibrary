@@ -29,6 +29,7 @@ public class ApkSignatureUtils {
 	 * @return 相同，返回true；否则，返回false；
 	 */
 	public static boolean checkSignature(Context ctx, String packageName, String srcSignature) {
+		
 		PackageManager pm = ctx.getPackageManager();
 		try {
 			PackageInfo pack = pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
