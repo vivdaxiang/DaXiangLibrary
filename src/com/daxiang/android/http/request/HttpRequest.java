@@ -1,11 +1,9 @@
-package com.daxiang.android.http;
+package com.daxiang.android.http.request;
 
-import java.util.List;
 import java.util.Map;
 
-import org.apache.http.NameValuePair;
-
 import com.daxiang.android.bean.BaseRequest;
+import com.daxiang.android.http.HttpConstants;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
 
 import android.content.Context;
@@ -22,13 +20,12 @@ public class HttpRequest {
 
 	public HttpRequest(Context context) {
 		this.context = context;
-		method = HttpMethod.GET;
 	}
 
 	/**
 	 * 
 	 */
-	private Context context;
+	protected Context context;
 
 	/**
 	 * 资源路径；
@@ -41,7 +38,7 @@ public class HttpRequest {
 	/**
 	 * 请求方式；also see {@link HttpConstants.HttpMethod}
 	 */
-	public HttpMethod method;
+	protected HttpMethod method;
 
 	/**
 	 * 请求头参数；
@@ -49,22 +46,18 @@ public class HttpRequest {
 	public Map<String, String> headParams;
 
 	/**
-	 * 请求实体参数；
-	 */
-	public List<NameValuePair> bodyParams;
-	/**
 	 * 缓存模式；also see {@link HttpConstants.NetDataProtocol}
 	 */
 	public int dataAccessMode;
 
-	private Handler responseHandler;
+	protected Handler responseHandler;
 
-	public BaseRequest bean;// 暂时忽略该选项；
+	private BaseRequest bean;// 暂时忽略该选项；
 
 	/**
 	 * 是否缓存请求结果
 	 */
-	private boolean isCache;
+	protected boolean isCache;
 
 	public boolean isCache() {
 		return isCache;
@@ -84,5 +77,9 @@ public class HttpRequest {
 
 	public void setResponseHandler(Handler responseHandler) {
 		this.responseHandler = responseHandler;
+	}
+
+	public HttpMethod getMethod() {
+		return method;
 	}
 }

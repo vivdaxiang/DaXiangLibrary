@@ -1,4 +1,4 @@
-package com.daxiang.android.http;
+package com.daxiang.android.http.utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

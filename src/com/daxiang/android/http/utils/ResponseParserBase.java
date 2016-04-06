@@ -1,6 +1,6 @@
 package com.daxiang.android.http.utils;
 
-import com.daxiang.android.bean.BaseResult;
+import com.daxiang.android.bean.BaseResponse;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -13,9 +13,9 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ResponseParserBase {
 
-	public static BaseResult getBaseResult(String json) {
+	public static BaseResponse getBaseResult(String json) {
 		Gson gson = new Gson();
-		return gson.fromJson(json, new TypeToken<BaseResult>() {
+		return gson.fromJson(json, new TypeToken<BaseResponse>() {
 		}.getType());
 	}
 
