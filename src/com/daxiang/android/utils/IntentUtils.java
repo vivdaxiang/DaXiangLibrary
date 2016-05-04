@@ -1,11 +1,16 @@
 package com.daxiang.android.utils;
 
 import java.io.File;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -187,6 +192,43 @@ public class IntentUtils {
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);// 裁剪出来的图片文件存放路径；
 		intent.putExtra("return-data", false);// 若为true，裁剪完将返回bitmap对象到上一个activity；
 		context.startActivityForResult(intent, requestCode);
+	}
+
+	/**
+	 * 根据包名启动APP；
+	 * 
+	 * @param context
+	 * @param packageName
+	 */
+	public static void launchAppWithPackageName(Context context, String packageName) {
+
+		PackageInfo packageInfo = null;
+		PackageManager pm = context.getPackageManager();
+		try {
+			packageInfo = pm.getPackageInfo(packageName, 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (packageInfo == null) {
+			return;
+		}
+
+		Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
+		resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		resolveIntent.setPackage(packageInfo.packageName);
+
+		List<ResolveInfo> resolveinfoList = pm.queryIntentActivities(resolveIntent, 0);
+		ResolveInfo resolveinfo = resolveinfoList.iterator().next();
+		if (resolveinfo != null) {
+			packageName = resolveinfo.activityInfo.packageName;
+			String className = resolveinfo.activityInfo.name;
+
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_LAUNCHER);
+			ComponentName cn = new ComponentName(packageName, className);
+			intent.setComponent(cn);
+			context.startActivity(intent);
+		}
 	}
 
 }
