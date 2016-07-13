@@ -33,9 +33,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 /**
- * 基于ASimpleCache改写； github地址：https://github.com/yangfuhai/ASimpleCache
- * 
- * @author Michael Yang（www.yangfuhai.com） update at 2013.08.07
+ * 基于ASimpleCache改写； 原作者github地址：https://github.com/yangfuhai/ASimpleCache
+ *
+ * @author daxiang
+ * @date 2016年7月13日
+ * @time 下午6:25:41
  */
 public class ACache {
 	/**

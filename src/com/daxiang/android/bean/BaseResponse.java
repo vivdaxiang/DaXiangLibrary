@@ -7,7 +7,7 @@ package com.daxiang.android.bean;
  * @date 2015-6-18
  * 
  */
-public class BaseResult {
+public class BaseResponse {
 	public int flag;
 	public String code;
 	public String token;
