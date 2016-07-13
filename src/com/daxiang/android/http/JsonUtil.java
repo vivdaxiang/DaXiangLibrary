@@ -1,6 +1,8 @@
 package com.daxiang.android.http;
 
 import com.daxiang.android.http.core.HttpTool;
+import com.daxiang.android.http.request.HttpRequest;
+import com.daxiang.android.http.utils.ACache;
 import com.daxiang.android.utils.Logger;
 
 import android.content.Context;

@@ -3,9 +3,9 @@ package com.daxiang.android.ui;
 import java.util.HashMap;
 
 import com.daxiang.android.http.HttpConstants;
-import com.daxiang.android.http.HttpRequest;
 import com.daxiang.android.http.HttpTask;
 import com.daxiang.android.http.executor.TaskExecutor;
+import com.daxiang.android.http.request.HttpRequest;
 import com.daxiang.android.utils.Logger;
 
 import android.app.ProgressDialog;
@@ -14,6 +14,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Window;
 
+/**
+ * 需要网络请求的activity；
+ * 
+ * @author daxiang
+ * @date 2016年4月6日
+ * @time 下午9:10:11
+ */
 public abstract class BaseNetworkActivity extends BaseActivity {
 	private static final String BASETAG = BaseNetworkActivity.class.getSimpleName();
 

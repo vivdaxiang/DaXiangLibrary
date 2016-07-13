@@ -3,12 +3,14 @@ package com.daxiang.android.utils;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -20,8 +22,11 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
+import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.text.TextUtils;
+import android.view.View;
 
 /**
  * 图片操作工具；
@@ -31,6 +36,11 @@ import android.text.TextUtils;
  * 
  */
 public class BitmapUtils {
+
+	private static final String PNG = ".png";
+	private static final String JPEG = ".jpeg";
+	private static final String BMP = ".bmp";
+	private static final String GIF = ".gif";
 
 	/**
 	 * 保存图片到SdCard，图片保存格式为PNG；
@@ -47,7 +57,7 @@ public class BitmapUtils {
 			return null;
 		}
 		if (TextUtils.isEmpty(fileName)) {
-			fileName = System.currentTimeMillis() + ".png";
+			fileName = System.currentTimeMillis() + PNG;
 		}
 		OutputStream stream = null;
 		File file = new File(FileUtils.getExternalFileDirs(context), fileName);
@@ -195,6 +205,59 @@ public class BitmapUtils {
 
 	private static int computeImageSampleSize(Options options, int targetWidth, int targetHeight) {
 		return Math.max(options.outWidth / targetWidth, options.outHeight / targetHeight);
+
+	}
+
+	/**
+	 * 截取UI中的某个View；
+	 * 
+	 * @param width
+	 *            保存的宽度；
+	 * @param height
+	 *            保存的高度；
+	 * @param view
+	 *            要截取的View对象；
+	 * @return
+	 */
+	public static Bitmap screenShot(int width, int height, View view) {
+		Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
+		view.draw(canvas);
+		return bitmap;
+	}
+
+	/**
+	 * 将图片文件存入到系统图库；
+	 * 
+	 * @param context
+	 * @param file
+	 *            图片文件；
+	 * @param imageName
+	 *            存储的名字；
+	 * @return 成功，返回true；否则，返回false；
+	 */
+	public static boolean insertMediaStore(Context context, File file, String imageName) {
+		if (context == null || file == null || !file.exists()) {
+			return false;
+		}
+
+		if (TextUtils.isEmpty(imageName)) {
+			imageName = SystemClock.currentThreadTimeMillis() + PNG;
+		}
+		try {
+
+			MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), imageName, null);
+			// String imagePath =
+			// MediaStore.Images.Media.insertImage(getContentResolver(),
+			// bitmap, "", "");
+
+			context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
 
 	}
 

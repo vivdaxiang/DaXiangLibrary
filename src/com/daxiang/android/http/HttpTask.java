@@ -1,5 +1,6 @@
 package com.daxiang.android.http;
 
+import com.daxiang.android.http.request.HttpRequest;
 import com.daxiang.android.utils.Logger;
 import com.daxiang.android.utils.NetworkUtils;
 

@@ -55,7 +55,9 @@ import org.json.JSONObject;
 
 import com.daxiang.android.bean.BaseRequest;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
-import com.daxiang.android.http.HttpRequest;
+import com.daxiang.android.http.request.HttpFilePostRequest;
+import com.daxiang.android.http.request.HttpPostRequest;
+import com.daxiang.android.http.request.HttpRequest;
 import com.daxiang.android.utils.FileUtils;
 import com.daxiang.android.utils.Logger;
 import com.google.gson.Gson;
@@ -145,11 +147,20 @@ public class HttpTool {
 
 	public static String sendRequest(HttpRequest httpRequest) {
 
-		if (httpRequest.method == HttpMethod.GET) {
+		if (httpRequest.getMethod() == HttpMethod.GET) {
 			return HttpTool.httpGet(httpRequest.path, httpRequest.headParams);
-		} else if (httpRequest.method == HttpMethod.POST) {
-			return HttpTool.httpPost(httpRequest.path, httpRequest.headParams, httpRequest.bodyParams);
-		} else if (httpRequest.method == HttpMethod.DELETE) {
+
+		} else if (httpRequest.getMethod() == HttpMethod.POST) {
+			HttpPostRequest postRequest = (HttpPostRequest) httpRequest;
+			return HttpTool.httpPost(postRequest.path, postRequest.headParams, postRequest.bodyParams);
+
+		} else if (httpRequest.getMethod() == HttpMethod.POST && httpRequest instanceof HttpFilePostRequest) {
+
+			HttpFilePostRequest filePostRequest = (HttpFilePostRequest) httpRequest;
+			return httpPost(filePostRequest.path, filePostRequest.headParams, filePostRequest.bodyParams,
+					filePostRequest.file, filePostRequest.fileBodyName);
+
+		} else if (httpRequest.getMethod() == HttpMethod.DELETE) {
 
 		}
 
@@ -163,7 +174,7 @@ public class HttpTool {
 	 * @param params
 	 * @return
 	 */
-	public static String httpGet(String url, Map<String, String> headParams) {
+	private static String httpGet(String url, Map<String, String> headParams) {
 		HttpGet request = new HttpGet(url);
 		setCookie(request);
 		addAgent(request);
@@ -194,7 +205,7 @@ public class HttpTool {
 	 * @param bodyParams
 	 * @return
 	 */
-	public static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams) {
+	private static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams) {
 
 		HttpPost request = new HttpPost(url);
 		setCookie(request);
@@ -223,7 +234,63 @@ public class HttpTool {
 
 	}
 
-	// -----------------------------------------------------------------------------------------
+	/**
+	 * 文件上传；
+	 * 
+	 * @param url
+	 * @param headParams
+	 *            Http请求头参数，如果没有，请置为null；
+	 * @param bodyParams
+	 *            Http请求实体；
+	 * @param file
+	 *            文件对象；
+	 * @param fileBodyName
+	 *            文件上传参数名；
+	 * @return
+	 */
+	private static String httpPost(String url, Map<String, String> headParams, List<NameValuePair> bodyParams,
+			File file, String fileBodyName) {
+		HttpPost request = new HttpPost(url);
+		setCookie(request);
+		addAgent(request);
+		if (null != headParams) {
+			for (Map.Entry<String, String> entry : headParams.entrySet()) {
+				request.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+
+		try {
+			MultipartEntity entity = new MultipartEntity();
+			if (null != bodyParams) {
+				for (NameValuePair nameValuePair : bodyParams) {
+					entity.addPart(nameValuePair.getName(), new StringBody(nameValuePair.getValue()));
+				}
+			}
+
+			if (file != null && file.exists()) {
+				// entity.addPart("file", new InputStreamBody(new
+				// FileInputStream(
+				// file), "audio/x-caf", "abc"));
+				// entity.addPart("file", new FileBody(file));
+				entity.addPart(fileBodyName, new FileBody(file));
+			}
+
+			request.setEntity(entity);
+			HttpResponse response = sHttpClient.execute(request);
+			getCookie(response);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				String content = EntityUtils.toString(response.getEntity());
+				return content;
+			}
+		} catch (Exception e) {
+			Logger.e(TAG, e.toString());
+		} finally {
+		}
+
+		return "";
+	}
+
+	// -----------------------------------------暂时不用start------------------------------------------------
 
 	/**
 	 * Http的Delete请求；
@@ -330,7 +397,7 @@ public class HttpTool {
 
 	}
 
-	// -----------------------------------------------------------------------------------------
+	// ----------------------------------------暂时不用end-------------------------------------------------
 
 	/**
 	 * 图片上传；
@@ -364,61 +431,6 @@ public class HttpTool {
 			// }
 		} catch (Exception e) {
 			Logger.e(TAG, e.toString());
-		} finally {
-		}
-
-		return "";
-	}
-
-	/**
-	 * 文件上传；
-	 * 
-	 * @param url
-	 * @param params
-	 *            Http请求头参数，如果没有，请置为null；
-	 * @param bodyParams
-	 *            Http请求实体；
-	 * @param file
-	 *            文件对象；
-	 * @return
-	 */
-	public static String httpPost(String url, Map<String, String> headParams, Map<String, String> bodyParams,
-			File file) {
-		HttpPost request = new HttpPost(url);
-		setCookie(request);
-		addAgent(request);
-		if (null != headParams) {
-			for (Map.Entry<String, String> entry : headParams.entrySet()) {
-				request.addHeader(entry.getKey(), entry.getValue());
-			}
-		}
-
-		try {
-			MultipartEntity entity = new MultipartEntity();
-			if (null != bodyParams) {
-				for (Map.Entry<String, String> entry : bodyParams.entrySet()) {
-					entity.addPart(entry.getKey(), new StringBody(entry.getValue()));
-				}
-			}
-
-			if (file.exists()) {
-				// entity.addPart("file", new InputStreamBody(new
-				// FileInputStream(
-				// file), "audio/x-caf", "abc"));
-				// entity.addPart("file", new FileBody(file));
-				entity.addPart("photo", new FileBody(file));
-			}
-
-			request.setEntity(entity);
-			HttpResponse response = sHttpClient.execute(request);
-			getCookie(response);
-			// if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
-			// {
-			String content = EntityUtils.toString(response.getEntity());
-			return content;
-			// }
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 		}
 
