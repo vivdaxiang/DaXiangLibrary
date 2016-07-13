@@ -7,7 +7,7 @@ import android.util.Base64;
 
 /**
  * 加解密工具；
- *
+ * 
  * @author daxiang
  * @date 2016年7月13日
  * @time 下午6:23:09
@@ -25,6 +25,13 @@ public class EncryptUtils {
 		return Base64.decode(src, Base64.DEFAULT);
 	}
 
+	/**
+	 * MD5加密；
+	 * 
+	 * @param originalStr
+	 *            待加密的字符串；
+	 * @return 源字符串经MD5加密后生成的字节数组，经由Base64转码生成的字符串；
+	 */
 	public static String md5Encrypt(String originalStr) {
 		String resultStr = "";
 		try {
