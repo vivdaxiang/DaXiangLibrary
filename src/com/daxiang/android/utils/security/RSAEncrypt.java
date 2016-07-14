@@ -19,7 +19,7 @@ import javax.crypto.Cipher;
  * @author daxiang
  * @date 2016-7-14
  */
-public class RSAEncryptUtils {
+public class RSAEncrypt {
 	private static final String CHARSET_NAME = "UTF-8";
 
 	/**
