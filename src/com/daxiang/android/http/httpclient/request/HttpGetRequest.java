@@ -1,4 +1,4 @@
-package com.daxiang.android.http.request;
+package com.daxiang.android.http.httpclient.request;
 
 import com.daxiang.android.http.HttpConstants.HttpMethod;
 

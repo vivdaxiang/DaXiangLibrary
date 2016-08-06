@@ -3,11 +3,11 @@ package com.daxiang.android.ui;
 import java.util.HashMap;
 
 import com.daxiang.android.http.HttpConstants;
-import com.daxiang.android.http.HttpTask;
 import com.daxiang.android.http.executor.TaskExecutor;
-import com.daxiang.android.http.request.HttpRequest;
+import com.daxiang.android.http.httpclient.HttpTask;
+import com.daxiang.android.http.httpclient.request.HttpRequest;
 import com.daxiang.android.utils.Logger;
-
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,9 +21,10 @@ import android.view.Window;
  * @date 2016年4月6日
  * @time 下午9:10:11
  */
-public abstract class BaseNetworkActivity extends BaseActivity {
-	private static final String BASETAG = BaseNetworkActivity.class.getSimpleName();
+public abstract class BaseHttpClientActivity extends BaseActivity {
+	private static final String BASETAG = BaseHttpClientActivity.class.getSimpleName();
 
+	@SuppressLint("UseSparseArrays")
 	private HashMap<Integer, HttpTask> mTaskQueue = new HashMap<Integer, HttpTask>();
 
 	@Override
@@ -75,6 +76,7 @@ public abstract class BaseNetworkActivity extends BaseActivity {
 		TaskExecutor.getInstance().submit(jsonTask);
 	}
 
+	@SuppressLint("HandlerLeak")
 	private Handler $responseHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {

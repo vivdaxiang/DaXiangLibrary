@@ -1,4 +1,4 @@
-package com.daxiang.android.http.core;
+package com.daxiang.android.http.httpclient.core;
 
 import java.net.URI;
 

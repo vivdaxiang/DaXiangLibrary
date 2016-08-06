@@ -1,6 +1,8 @@
-package com.daxiang.android.http;
+package com.daxiang.android.http.httpclient;
 
-import com.daxiang.android.http.request.HttpRequest;
+import com.daxiang.android.http.HttpConstants;
+import com.daxiang.android.http.HttpConstants.NetDataProtocol;
+import com.daxiang.android.http.httpclient.request.HttpRequest;
 import com.daxiang.android.utils.Logger;
 import com.daxiang.android.utils.NetworkUtils;
 

@@ -15,7 +15,7 @@ public class Logger {
 	public static int INFO = 3;
 	public static int WARN = 2;
 	public static int ERROR = 1;
-	public static final int LOG_LEVEL = 0;
+	public static final int LOG_LEVEL = 5;
 
 	public static void v(String tag, String msg) {
 		if (LOG_LEVEL > VERBOSE) {

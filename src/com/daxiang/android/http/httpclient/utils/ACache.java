@@ -1,4 +1,4 @@
-package com.daxiang.android.http.utils;
+package com.daxiang.android.http.httpclient.utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,8 +34,10 @@ import android.graphics.drawable.Drawable;
 
 /**
  * 基于ASimpleCache改写； github地址：https://github.com/yangfuhai/ASimpleCache
- * 
- * @author Michael Yang（www.yangfuhai.com） update at 2013.08.07
+ *
+ * @author daxiang
+ * @date 2016年8月6日
+ * @time 下午2:28:39
  */
 public class ACache {
 	/**

@@ -1,4 +1,4 @@
-package com.daxiang.android.http.core;
+package com.daxiang.android.http.httpclient.core;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,9 +55,9 @@ import org.json.JSONObject;
 
 import com.daxiang.android.bean.BaseRequest;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
-import com.daxiang.android.http.request.HttpFilePostRequest;
-import com.daxiang.android.http.request.HttpPostRequest;
-import com.daxiang.android.http.request.HttpRequest;
+import com.daxiang.android.http.httpclient.request.HttpFilePostRequest;
+import com.daxiang.android.http.httpclient.request.HttpPostRequest;
+import com.daxiang.android.http.httpclient.request.HttpRequest;
 import com.daxiang.android.utils.FileUtils;
 import com.daxiang.android.utils.Logger;
 import com.google.gson.Gson;
