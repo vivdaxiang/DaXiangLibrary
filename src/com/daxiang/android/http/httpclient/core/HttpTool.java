@@ -150,15 +150,15 @@ public class HttpTool {
 		if (httpRequest.getMethod() == HttpMethod.GET) {
 			return HttpTool.httpGet(httpRequest.path, httpRequest.headParams);
 
-		} else if (httpRequest.getMethod() == HttpMethod.POST) {
-			HttpPostRequest postRequest = (HttpPostRequest) httpRequest;
-			return HttpTool.httpPost(postRequest.path, postRequest.headParams, postRequest.bodyParams);
-
 		} else if (httpRequest.getMethod() == HttpMethod.POST && httpRequest instanceof HttpFilePostRequest) {
 
 			HttpFilePostRequest filePostRequest = (HttpFilePostRequest) httpRequest;
 			return httpPost(filePostRequest.path, filePostRequest.headParams, filePostRequest.bodyParams,
 					filePostRequest.file, filePostRequest.fileBodyName);
+
+		} else if (httpRequest.getMethod() == HttpMethod.POST) {
+			HttpPostRequest postRequest = (HttpPostRequest) httpRequest;
+			return HttpTool.httpPost(postRequest.path, postRequest.headParams, postRequest.bodyParams);
 
 		} else if (httpRequest.getMethod() == HttpMethod.DELETE) {
 
