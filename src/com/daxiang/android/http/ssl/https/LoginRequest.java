@@ -20,8 +20,10 @@ public class LoginRequest {
 
 	public static void main(String[] args) throws Exception {
 		String url = "https://127.0.0.1:8443/HttpsServer/loginHttpServlet";
-
-		TrustManager[] tms = { new X509TrustManagerImpl() };
+		String keystoreFile = "E:/HTTPS/clienttrust.keystore";
+		String keystorePwd = "222222";
+		TrustManager[] tms = { new X509TrustManagerImpl(keystoreFile,
+				keystorePwd) };
 		// Use factory
 		SSLContext ctx = SSLContext.getInstance("TLS");
 		ctx.init(null, tms, null);

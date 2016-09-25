@@ -3,6 +3,8 @@ package com.daxiang.android.http.ssl.https;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
+import com.daxiang.android.utils.Logger;
+
 /**
  * 
  * @author daxiang
@@ -24,6 +26,9 @@ public class MyHostnameVerifier implements HostnameVerifier {
 		} else {
 			good_address = false;
 		}
+		
+		Logger.i("MyHostnameVerifier", "主机名认证结果=="+good_address);
+		
 		return good_address;
 	}
 }

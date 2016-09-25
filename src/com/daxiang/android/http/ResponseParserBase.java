@@ -1,4 +1,4 @@
-package com.daxiang.android.http.httpclient.utils;
+package com.daxiang.android.http;
 
 import com.daxiang.android.bean.BaseResponse;
 import com.google.gson.Gson;

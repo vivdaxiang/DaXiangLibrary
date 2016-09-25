@@ -6,7 +6,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="lib" path="libs/httpmime-4.5.2.jar"/>
-	<classpathentry kind="lib" path="libs/okhttp-3.4.1.jar"/>
+	<classpathentry kind="lib" path="libs/okhttp-3.4.1.jar" sourcepath="E:/开源工程/网络框架/okhttp-master/okhttp"/>
 	<classpathentry kind="lib" path="libs/okio-1.9.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
