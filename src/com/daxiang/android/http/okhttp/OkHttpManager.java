@@ -30,7 +30,7 @@ import com.daxiang.android.http.ssl.https.X509TrustManagerImpl;
  * @time 下午3:07:04
  */
 public class OkHttpManager {
-	//遗留问题：在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
+	// 遗留问题：在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
 	private static OkHttpClient mInstance;
 	private static boolean mUseHttps;
 	private static String httpsHostName;
@@ -114,7 +114,8 @@ public class OkHttpManager {
 
 	private static Call postAsync(final OkHttpRequest okHttpRequest) {
 		Request request = new Request.Builder().url(okHttpRequest.url())
-				.post(okHttpRequest.requestBody()).build();
+				.post(okHttpRequest.requestBody())
+				.cacheControl(okHttpRequest.cacheControl()).build();
 		Call call = mInstance.newCall(request);
 		call.enqueue(new Callback() {
 
@@ -139,7 +140,7 @@ public class OkHttpManager {
 
 	private static Call getAsync(final OkHttpRequest okHttpRequest) {
 		Request request = new Request.Builder().url(okHttpRequest.url())
-				.build();
+				.cacheControl(okHttpRequest.cacheControl()).build();
 		Call call = mInstance.newCall(request);
 		call.enqueue(new Callback() {
 
@@ -169,7 +170,7 @@ public class OkHttpManager {
 		result.setCall(call);
 		result.setHeaders(response.headers());
 		try {
-			result.setResponse(response.body().string());//如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
+			result.setResponse(response.body().string());// 如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
 		} catch (IOException e) {
 			e.printStackTrace();
 			result.setResponse("");
