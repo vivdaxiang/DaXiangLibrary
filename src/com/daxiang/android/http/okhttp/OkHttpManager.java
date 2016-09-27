@@ -1,5 +1,6 @@
 package com.daxiang.android.http.okhttp;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,17 +11,20 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import android.content.Context;
 import android.os.Message;
 
 import com.daxiang.android.http.HttpConstants;
 import com.daxiang.android.http.HttpConstants.HttpMethod;
 import com.daxiang.android.http.ssl.https.MyHostnameVerifier;
 import com.daxiang.android.http.ssl.https.X509TrustManagerImpl;
+import com.daxiang.android.utils.FileUtils;
 
 /**
  * 
@@ -36,6 +40,9 @@ public class OkHttpManager {
 	private static String httpsHostName;
 	private static InputStream keystoreFile;
 	private static String keystorePwd;
+
+	private static int cacheSize = 50 * 1024 * 1024; // 50 MiB
+	private static Context mContext;
 
 	private OkHttpManager() {
 
@@ -67,12 +74,13 @@ public class OkHttpManager {
 		keystorePwd = pwd;
 	}
 
-	public static OkHttpClient init() {
+	public static OkHttpClient init(Context context) {
+		mContext = context;
 		if (mInstance == null) {
 			synchronized (OkHttpManager.class) {
 				if (mInstance == null) {
 					if (!mUseHttps) {
-						mInstance = new OkHttpClient.Builder().build();
+						mInstance = initHttpClient();
 					} else {
 						mInstance = initHttpsClient();
 					}
@@ -82,6 +90,18 @@ public class OkHttpManager {
 		}
 
 		return mInstance;
+	}
+
+	private static Cache cache() {
+		File cacheDirectory = new File(FileUtils.getExternalCacheDirs(mContext)
+				.getAbsolutePath() + "/okhttp_cache");
+		Cache cache = new Cache(cacheDirectory, cacheSize);
+		return cache;
+	}
+
+	public static OkHttpClient initHttpClient() {
+		OkHttpClient client = new OkHttpClient.Builder().cache(cache()).build();
+		return client;
 	}
 
 	public static OkHttpClient initHttpsClient() {
@@ -99,7 +119,8 @@ public class OkHttpManager {
 		}
 		OkHttpClient client = new OkHttpClient.Builder()
 				.hostnameVerifier(new MyHostnameVerifier(httpsHostName))
-				.sslSocketFactory(sslSocketFactory, trustManager).build();
+				.sslSocketFactory(sslSocketFactory, trustManager)
+				.cache(cache()).build();
 		return client;
 	}
 
