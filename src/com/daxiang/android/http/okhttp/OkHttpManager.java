@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -41,8 +42,13 @@ public class OkHttpManager {
 	private static InputStream keystoreFile;
 	private static String keystorePwd;
 
-	private static int cacheSize = 50 * 1024 * 1024; // 50 MiB
 	private static Context mContext;
+
+	// ******************常量***************************
+	private static final int CACHE_SIZE = 50 * 1024 * 1024; // 50 MiB
+	private static final long CONNECTION_TIMEOUT = 10_000;// 10s;
+	private static final long WRITE_TIMEOUT = 10_000;// 10s;
+	private static final long READ_TIMEOUT = 10_000;// 10s;
 
 	private OkHttpManager() {
 
@@ -95,12 +101,15 @@ public class OkHttpManager {
 	private static Cache cache() {
 		File cacheDirectory = new File(FileUtils.getExternalCacheDirs(mContext)
 				.getAbsolutePath() + "/okhttp_cache");
-		Cache cache = new Cache(cacheDirectory, cacheSize);
+		Cache cache = new Cache(cacheDirectory, CACHE_SIZE);
 		return cache;
 	}
 
 	public static OkHttpClient initHttpClient() {
-		OkHttpClient client = new OkHttpClient.Builder().cache(cache()).build();
+		OkHttpClient client = new OkHttpClient.Builder().cache(cache())
+				.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+				.writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
+				.readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS).build();
 		return client;
 	}
 
@@ -120,7 +129,10 @@ public class OkHttpManager {
 		OkHttpClient client = new OkHttpClient.Builder()
 				.hostnameVerifier(new MyHostnameVerifier(httpsHostName))
 				.sslSocketFactory(sslSocketFactory, trustManager)
-				.cache(cache()).build();
+				.cache(cache())
+				.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+				.writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
+				.readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS).build();
 		return client;
 	}
 
@@ -162,6 +174,7 @@ public class OkHttpManager {
 	private static Call getAsync(final OkHttpRequest okHttpRequest) {
 		Request request = new Request.Builder().url(okHttpRequest.url())
 				.cacheControl(okHttpRequest.cacheControl()).build();
+
 		Call call = mInstance.newCall(request);
 		call.enqueue(new Callback() {
 
