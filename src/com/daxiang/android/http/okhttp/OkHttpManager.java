@@ -35,7 +35,11 @@ import com.daxiang.android.utils.FileUtils;
  * @time 下午3:07:04
  */
 public class OkHttpManager {
-	// 遗留问题：在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
+	// 遗留问题：①在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
+	// ②单个call的配置；15号完成
+	// ③BaseOkHttpActivity加个log输出；
+	// ④GzipRequestInterceptor的使用；
+	// ⑤ProgressListener的使用；16号完成；
 	private static OkHttpClient mInstance;
 	private static boolean mUseHttps;
 	private static String httpsHostName;
@@ -43,12 +47,20 @@ public class OkHttpManager {
 	private static String keystorePwd;
 
 	private static Context mContext;
+	/**
+	 * 是否使用Application Interceptors；
+	 */
+	private static boolean mUseApplicationInterceptors = false;
+	/**
+	 * 是否使用Network Interceptors；
+	 */
+	private static boolean mUseNetworkInterceptors = false;
 
 	// ******************常量***************************
 	private static final int CACHE_SIZE = 50 * 1024 * 1024; // 50 MiB
-	private static final long CONNECTION_TIMEOUT = 10_000;// 10s;
-	private static final long WRITE_TIMEOUT = 10_000;// 10s;
-	private static final long READ_TIMEOUT = 10_000;// 10s;
+	private static final long CONNECTION_TIMEOUT = 30_000;// 30s;
+	private static final long WRITE_TIMEOUT = 30_000;// 30s;
+	private static final long READ_TIMEOUT = 30_000;// 30s;
 
 	private OkHttpManager() {
 
@@ -60,6 +72,32 @@ public class OkHttpManager {
 
 	public static void httpsHostName(String hostName) {
 		httpsHostName = hostName;
+	}
+
+	/**
+	 * 是否使用Application Interceptors；
+	 * 
+	 * @param useApplicationInterceptors
+	 */
+	public static void useApplicationInterceptors(
+			boolean useApplicationInterceptors) {
+		if (useApplicationInterceptors) {
+			mUseNetworkInterceptors = false;
+		}
+		mUseApplicationInterceptors = useApplicationInterceptors;
+	}
+
+	/**
+	 * 是否使用Network Interceptors；
+	 * 
+	 * @param useNetworkInterceptors
+	 */
+	public static void useNetworkInterceptors(boolean useNetworkInterceptors) {
+		// 如果使用了Network Interceptors，就不再使用Application Interceptors，避免log重复；
+		if (useNetworkInterceptors) {
+			mUseApplicationInterceptors = false;
+		}
+		mUseNetworkInterceptors = useNetworkInterceptors;
 	}
 
 	public static void keystoreFile(String file) {
@@ -105,14 +143,23 @@ public class OkHttpManager {
 		return cache;
 	}
 
+	/**
+	 * 初始化OKHttpClient；
+	 * 
+	 * @return
+	 */
 	public static OkHttpClient initHttpClient() {
-		OkHttpClient client = new OkHttpClient.Builder().cache(cache())
-				.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
-				.writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
-				.readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS).build();
-		return client;
+		OkHttpClient.Builder builder = new OkHttpClient.Builder()
+				.cache(cache());
+		configurationClient(builder);
+		return builder.build();
 	}
 
+	/**
+	 * 初始化使用HTTPS的OkHttpClient；
+	 * 
+	 * @return
+	 */
 	public static OkHttpClient initHttpsClient() {
 		X509TrustManager trustManager = null;
 		SSLSocketFactory sslSocketFactory = null;
@@ -126,14 +173,25 @@ public class OkHttpManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		OkHttpClient client = new OkHttpClient.Builder()
+		OkHttpClient.Builder builder = new OkHttpClient.Builder()
 				.hostnameVerifier(new MyHostnameVerifier(httpsHostName))
-				.sslSocketFactory(sslSocketFactory, trustManager)
-				.cache(cache())
+				.sslSocketFactory(sslSocketFactory, trustManager);
+
+		configurationClient(builder);
+		return builder.build();
+	}
+
+	public static void configurationClient(OkHttpClient.Builder builder) {
+		builder.cache(cache())
 				.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
 				.writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
-				.readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS).build();
-		return client;
+				.readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS);
+		if (mUseApplicationInterceptors) {
+			builder.addInterceptor(new LogInterceptor());
+		}
+		if (mUseNetworkInterceptors) {
+			builder.addNetworkInterceptor(new LogInterceptor());
+		}
 	}
 
 	public static Call sendRequest(OkHttpRequest okHttpRequest) {
