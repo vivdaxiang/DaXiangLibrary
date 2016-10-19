@@ -13,6 +13,7 @@ import com.daxiang.android.http.HttpConstants;
 import com.daxiang.android.http.okhttp.OkHttpManager;
 import com.daxiang.android.http.okhttp.OkHttpRequest;
 import com.daxiang.android.http.okhttp.OkHttpResponse;
+import com.daxiang.android.utils.Logger;
 
 /**
  * 
@@ -22,13 +23,13 @@ import com.daxiang.android.http.okhttp.OkHttpResponse;
  * @time 上午11:14:28
  */
 public abstract class BaseOkHttpActivity extends BaseActivity {
-
+	private static final String TAG = BaseOkHttpActivity.class.getSimpleName();
 	protected List<Call> callList = new ArrayList<Call>();
 
 	protected void sendRequest(OkHttpRequest request) {
 		// request.okHttpCallback = this;
 		request.responseHandler = this.$responseHandler;
-
+		Logger.i(TAG, "发起请求==" + request.url());
 		Call call = OkHttpManager.sendRequest(request);
 		callList.add(call);
 	}
@@ -41,6 +42,9 @@ public abstract class BaseOkHttpActivity extends BaseActivity {
 			removeSingleCall(result.getCall());
 			switch (msg.what) {
 			case HttpConstants.NetDataProtocol.LOAD_SUCCESS:
+				// Logger.i(TAG,
+				// result.getCall().request().url().url().getPath());
+				Logger.i(TAG, "返回响应==" + result.getResponseStr());
 				onRequestSuccess(result.getCall(), result, msg.arg1);
 				break;
 
