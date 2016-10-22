@@ -28,19 +28,16 @@ import com.daxiang.android.http.ssl.https.X509TrustManagerImpl;
 import com.daxiang.android.utils.FileUtils;
 
 /**
- * 
+ * OKHttp核心管理类；
  * 
  * @author daxiang
  * @date 2016年8月6日
  * @time 下午3:07:04
  */
 public class OkHttpManager {
-	// 遗留问题：①在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？
-	// ②单个call的配置；15号完成
-	// ③BaseOkHttpActivity加个log输出；
-	// ④GzipRequestInterceptor的使用；
-	// ⑤ProgressListener的使用；16号完成；
+
 	private static OkHttpClient mInstance;
+
 	private static boolean mUseHttps;
 	private static String httpsHostName;
 	private static InputStream keystoreFile;
@@ -56,12 +53,13 @@ public class OkHttpManager {
 	 */
 	private static boolean mUseNetworkInterceptors = false;
 
-	// ******************常量***************************
+	// ****************************常量*************************************
 	private static final int CACHE_SIZE = 50 * 1024 * 1024; // 50 MiB
 	private static final long CONNECTION_TIMEOUT = 30_000;// 30s;
 	private static final long WRITE_TIMEOUT = 30_000;// 30s;
 	private static final long READ_TIMEOUT = 30_000;// 30s;
 
+	// *******************************************************************
 	private OkHttpManager() {
 
 	}
@@ -132,6 +130,19 @@ public class OkHttpManager {
 				}
 			}
 		}
+
+		return mInstance;
+	}
+
+	/**
+	 * 先初始化{@link OkHttpManager.init}
+	 * ，再调用该方法，否则空指针；主要用于单个call的配置，client.newBuilder()--This returns a builder
+	 * that shares the same connection pool, dispatcher, and configuration with
+	 * the original client.
+	 * 
+	 * @return
+	 */
+	public static OkHttpClient getInstance() {
 
 		return mInstance;
 	}
@@ -207,7 +218,8 @@ public class OkHttpManager {
 		Request request = new Request.Builder().url(okHttpRequest.url())
 				.post(okHttpRequest.requestBody())
 				.cacheControl(okHttpRequest.cacheControl()).build();
-		Call call = mInstance.newCall(request);
+
+		Call call = getCall(okHttpRequest, request);
 		call.enqueue(new Callback() {
 
 			@Override
@@ -233,7 +245,7 @@ public class OkHttpManager {
 		Request request = new Request.Builder().url(okHttpRequest.url())
 				.cacheControl(okHttpRequest.cacheControl()).build();
 
-		Call call = mInstance.newCall(request);
+		Call call = getCall(okHttpRequest, request);
 		call.enqueue(new Callback() {
 
 			@Override
@@ -253,6 +265,16 @@ public class OkHttpManager {
 			}
 		});
 
+		return call;
+	}
+
+	private static Call getCall(OkHttpRequest okHttpRequest, Request request) {
+		Call call = null;
+		if (okHttpRequest.client() != null) {
+			call = okHttpRequest.client().newCall(request);
+			return call;
+		}
+		call = mInstance.newCall(request);
 		return call;
 	}
 

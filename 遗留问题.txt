@@ -1,0 +1,4 @@
+﻿①在handleSuccess（）中如何处理响应体是字节数据或者是输入流的情况，比如下载文件？做个文件下载器，和其它的业务隔离开，单独处理，跟③ProgressListener配合起来；找个开源库参考下；
+②GzipRequestInterceptor的使用；
+③ProgressListener的使用；
+④如何在Fragment和Adapter中处理网络请求？

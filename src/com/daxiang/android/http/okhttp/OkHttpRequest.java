@@ -1,6 +1,7 @@
 package com.daxiang.android.http.okhttp;
 
 import okhttp3.CacheControl;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 
 import android.os.Handler;
@@ -19,6 +20,7 @@ public class OkHttpRequest {
 	private HttpMethod requestMethod;
 	private RequestBody requestBody;
 	private CacheControl cacheControl;
+	private OkHttpClient client;
 
 	// public OkHttpCallback okHttpCallback;
 	public Handler responseHandler;
@@ -29,6 +31,7 @@ public class OkHttpRequest {
 		requestMethod = builder.requestMethod;
 		requestBody = builder.requestBody;
 		cacheControl = builder.cacheControl;
+		client = builder.client;
 	}
 
 	public String url() {
@@ -51,12 +54,22 @@ public class OkHttpRequest {
 		return cacheControl;
 	}
 
+	public OkHttpClient client() {
+		return client;
+	}
+
 	public static class Builder {
 		private String url;
 		private int requestCode;
 		private HttpMethod requestMethod;
 		private RequestBody requestBody;
 		private CacheControl cacheControl;
+		/**
+		 * client.newBuilder()构建出来的副本； client.newBuilder()--This returns a
+		 * builder that shares the same connection pool, dispatcher, and
+		 * configuration with the original client.
+		 */
+		private OkHttpClient client;
 
 		public Builder() {
 			this.requestMethod = HttpMethod.GET;
@@ -85,6 +98,11 @@ public class OkHttpRequest {
 
 		public Builder cacheControl(CacheControl cacheControl) {
 			this.cacheControl = cacheControl;
+			return this;
+		}
+
+		public Builder client(OkHttpClient client) {
+			this.client = client;
 			return this;
 		}
 
